@@ -2280,7 +2280,7 @@ const TeamTable = () => {
                                         }}
                                         columns={[
                                             { 
-                                                name: 'Sr.No.',
+                                                name: 'Sr',
                                                 width: '100px',
                                                 sort: true
                                             }, 

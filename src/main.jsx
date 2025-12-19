@@ -11,7 +11,7 @@ import Dashboard from './container/dashboard/dashboard.jsx';
 import Authenticationlayout from './pages/authenticationlayout.jsx';
 import TeamMaster from './container/master/teammaster/TeamMaster.jsx';
 import MiqaatMaster from './container/master/miqaatmaster/MiqaatMaster.jsx';
-import Duties from './container/back office/duties.jsx';
+import Duties from '././container/back office/Duties.jsx';
  
 
 window.global = window; // Polyfill for global
