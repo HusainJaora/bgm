@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { connect } from "react-redux";
 import { LocalStorageBackup } from '../components/common/switcher/switcherdata';
 import { ThemeChanger } from "../redux/action";
-import bgmi from "../assets/images/burhaniguards_logo.png";
+import bgmi from "../assets/images/burhaniguards_logo1.png";
 
 const Login = ({ ThemeChanger }) => {
     const [passwordshow1, setpasswordshow1] = useState(false);

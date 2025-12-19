@@ -15,586 +15,6 @@ import Swal from 'sweetalert2';
 // API Base URL Configuration
 const API_BASE_URL = 'http://13.204.161.209:8080/BURHANI_GUARDS_API_TEST/api';
 
-// const AddJamaat = ({ 
-//     show,
-//     onClose,
-//     onSave,
-//     editData = null,
-//     title = "Add New Team"
-// }) => {
-    
-//     // Form state
-//     const [formData, setFormData] = useState({
-//         name: '',
-//         jamiaat: null,
-//         jamaat: []
-//     });
-
-//     // Validation errors state
-//     const [errors, setErrors] = useState({
-//         name: '',
-//         jamiaat: '',
-//         jamaat: ''
-//     });
-
-//     // Loading states
-//     const [isLoading, setIsLoading] = useState(false);
-//     const [isLoadingJamiaats, setIsLoadingJamiaats] = useState(false);
-//     const [isLoadingJamaats, setIsLoadingJamaats] = useState(false);
-
-//     // Options state
-//     const [jamiaatOptions, setJamiaatOptions] = useState([]);
-//     const [jamaatOptions, setJamaatOptions] = useState([]);
-
-//     // Fetch all Jamiaats on component mount
-//     useEffect(() => {
-//         if (show) {
-//             fetchAllJamiaats();
-//         }
-//     }, [show]);
-
-//     // Fetch Jamiaats from API
-//     const fetchAllJamiaats = async () => {
-//         setIsLoadingJamiaats(true);
-//         try {
-//             const token = sessionStorage.getItem('access_token');
-            
-//             if (!token) {
-//                 toast.error('Authentication token not found. Please login again.');
-//                 setIsLoadingJamiaats(false);
-//                 return;
-//             }
-            
-//             const response = await fetch(`${API_BASE_URL}/Team/GetAllJamiaats`, {
-//                 method: 'GET',
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                     'Authorization': `Bearer ${token}`
-//                 }
-//             });
-
-//             const result = await response.json();
-
-//             if (response.status === 401) {
-//                 toast.error('Session expired. Please login again.');
-//                 return;
-//             }
-
-//             if (response.ok && result.success) {
-//                 const options = result.data.map(item => ({
-//                     value: item.jamiaat_id,
-//                     label: item.jamiaat_name
-//                 }));
-//                 setJamiaatOptions(options);
-//             } else {
-//                 toast.error(result.message || 'Failed to load Jamiaats');
-//             }
-//         } catch (error) {
-//             console.error('Error fetching Jamiaats:', error);
-//             toast.error('Error loading Jamiaats. Please try again.');
-//         } finally {
-//             setIsLoadingJamiaats(false);
-//         }
-//     };
-
-//     // Fetch Jamaats based on selected Jamiaat
-//     const fetchJamaatsByJamiaat = async (jamiaatId) => {
-//         setIsLoadingJamaats(true);
-//         setJamaatOptions([]);
-        
-//         try {
-//             const token = sessionStorage.getItem('access_token');
-            
-//             if (!token) {
-//                 toast.error('Authentication token not found. Please login again.');
-//                 setIsLoadingJamaats(false);
-//                 return;
-//             }
-            
-//             const response = await fetch(`${API_BASE_URL}/Team/GetAllJamaatsByJamiaat`, {
-//                 method: 'POST',
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                     'Authorization': `Bearer ${token}`
-//                 },
-//                 body: JSON.stringify({
-//                     jamiaat_id: jamiaatId
-//                 })
-//             });
-
-//             const result = await response.json();
-
-//             if (response.status === 401) {
-//                 toast.error('Session expired. Please login again.');
-//                 return;
-//             }
-
-//             if (response.ok && result.success) {
-//                 const options = result.data.map(item => ({
-//                     value: item.jamaat_id,
-//                     label: item.jamaat_name
-//                 }));
-//                 setJamaatOptions(options);
-//             } else {
-//                 toast.error(result.message || 'Failed to load Jamaats for selected Jamiaat');
-//                 setJamaatOptions([]);
-//             }
-//         } catch (error) {
-//             console.error('Error fetching Jamaats:', error);
-//             toast.error('Error loading Jamaats. Please try again.');
-//             setJamaatOptions([]);
-//         } finally {
-//             setIsLoadingJamaats(false);
-//         }
-//     };
-
-//     // Populate form when editing
-//     useEffect(() => {
-//         if (editData && show) {
-//             setFormData({
-//                 name: editData.name || '',
-//                 jamiaat: editData.jamiaat || null,
-//                 jamaat: editData.jamaat || []
-//             });
-//             setErrors({ name: '', jamiaat: '', jamaat: '' });
-            
-//             if (editData.jamiaat?.value) {
-//                 fetchJamaatsByJamiaat(editData.jamiaat.value);
-//             }
-//         } else if (!editData && show) {
-//             handleClear();
-//         }
-//     }, [editData, show]);
-
-//     // Handle form input changes
-//     const handleInputChange = (e) => {
-//         const { name, value } = e.target;
-//         setFormData(prev => ({
-//             ...prev,
-//             [name]: value
-//         }));
-//         if (errors[name]) {
-//             setErrors(prev => ({
-//                 ...prev,
-//                 [name]: ''
-//             }));
-//         }
-//     };
-
-//     // Handle Jamiaat select change
-//     const handlejamiaatChange = (selectedOption) => {
-//         setFormData(prev => ({
-//             ...prev,
-//             jamiaat: selectedOption,
-//             jamaat: []
-//         }));
-        
-//         if (errors.jamiaat) {
-//             setErrors(prev => ({
-//                 ...prev,
-//                 jamiaat: ''
-//             }));
-//         }
-        
-//         if (selectedOption?.value) {
-//             fetchJamaatsByJamiaat(selectedOption.value);
-//         } else {
-//             setJamaatOptions([]);
-//         }
-//     };
-
-//     // Handle Jamaat select change
-//     const handleJamaatChange = (selectedOptions) => {
-//         setFormData(prev => ({
-//             ...prev,
-//             jamaat: selectedOptions || []
-//         }));
-//         if (errors.jamaat) {
-//             setErrors(prev => ({
-//                 ...prev,
-//                 jamaat: ''
-//             }));
-//         }
-//     };
-
-//     // Validate form
-//     const validateForm = () => {
-//         const newErrors = {
-//             name: '',
-//             jamiaat: '',
-//             jamaat: ''
-//         };
-
-//         let isValid = true;
-
-//         if (!formData.name.trim()) {
-//             newErrors.name = 'Name is required';
-//             isValid = false;
-//         }
-
-//         if (!formData.jamiaat) {
-//             newErrors.jamiaat = 'Jamiaat is required';
-//             isValid = false;
-//         }
-
-//         if (!formData.jamaat || formData.jamaat.length === 0) {
-//             newErrors.jamaat = 'At least one Jamaat must be selected';
-//             isValid = false;
-//         }
-
-//         setErrors(newErrors);
-//         return isValid;
-//     };
-
-//     // Handle Save
-//     const handleSave = async () => {
-//         if (!validateForm()) {
-//             toast.error('Please fill in all required fields');
-//             return;
-//         }
-
-//         setIsLoading(true);
-//         // console.log("Save button")
-
-//         try {
-//             const token = sessionStorage.getItem('access_token');
-          
-
-//             if (!token) {
-//                 toast.error('Authentication token not found. Please login again.');
-//                 setIsLoading(false);
-//                 return;
-//             }
-
-//             const payload = {
-//                 team_name: formData.name.trim(),
-//                 jamiaat_id: formData.jamiaat.value,
-//                 jamaat_ids: formData.jamaat.map(j => j.value)
-//             };
-//             const response = await fetch(`${API_BASE_URL}/Team/InsertTeam`, {
-//                 method: 'POST',
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                     'Authorization': `Bearer ${token}`
-//                 },
-//                 body: JSON.stringify(payload)
-//             });
-
-//             const result = await response.json();
-
-//   console.log("Save button :"+JSON.stringify(payload))
-//             if (response.status === 401) {
-//                 toast.error('Session expired. Please login again.');
-//                 return;
-//             }
-
-//             if (response.ok && result.success) {
-//                 if (result.data?.result_code === 1) {
-//                     toast.success('Team added successfully!');
-                    
-//                     if (onSave) {
-//                         const dataToSave = {
-//                             name: formData.name,
-//                             jamiaatId: formData.jamiaat.value,
-//                             jamiaatName: formData.jamiaat.label,
-//                             jamaatIds: formData.jamaat.map(j => j.value),
-//                             jamaatNames: formData.jamaat.map(j => j.label),
-//                             jamiaat: formData.jamiaat,
-//                             jamaat: formData.jamaat
-//                         };
-//                         onSave(dataToSave);
-                        
-//                     }
-                    
-//                     handleClose();
-//                 } else if (result.data?.result_code === 4) {
-//                     setErrors(prev => ({
-//                         ...prev,
-//                         name: 'Team name already exists'
-//                     }));
-//                     toast.error('Team name already exists');
-//                 } else if (result.data?.result_code === 5) {
-//                     setErrors(prev => ({
-//                         ...prev,
-//                         jamaat: 'No jamaat IDs provided'
-//                     }));
-//                     toast.error('Please select at least one Jamaat');
-//                 } else {
-//                     toast.error(result.message || 'Failed to add team');
-//                 }
-//             } else {
-//                 toast.error(result.message || 'Failed to add team');
-//             }
-//         } catch (error) {
-//             console.error('Error saving team:', error);
-//             toast.error('An error occurred while saving the team. Please try again.');
-//         } finally {
-//             setIsLoading(false);
-//         }
-//     };
-
-//     // Handle Close
-//     const handleClose = () => {
-//         handleClear();
-//         if (onClose) {
-//             onClose();
-//         }
-//     };
-
-//     // Handle Clear
-//     const handleClear = () => {
-//         setFormData({
-//             name: '',
-//             jamiaat: null,
-//             jamaat: []
-//         });
-//         setErrors({
-//             name: '',
-//             jamiaat: '',
-//             jamaat: ''
-//         });
-//         setJamaatOptions([]);
-//     };
-
-//     // Custom styles for react-select
-//     const selectStyles = {
-//         control: (base, state) => ({
-//             ...base,
-//             minHeight: '42px',
-//             borderColor: state.isFocused 
-//                 ? '#80bdff' 
-//                 : (errors.jamiaat || errors.jamaat) 
-//                     ? '#dc3545' 
-//                     : '#ced4da',
-//             borderRadius: '0.375rem',
-//             boxShadow: state.isFocused 
-//                 ? '0 0 0 0.2rem rgba(13,110,253,.25)' 
-//                 : 'none',
-//             '&:hover': {
-//                 borderColor: state.isFocused ? '#80bdff' : '#adb5bd'
-//             }
-//         }),
-//         placeholder: (base) => ({
-//             ...base,
-//             color: '#6c757d',
-//             fontSize: '0.875rem'
-//         }),
-//         multiValue: (base) => ({
-//             ...base,
-//             backgroundColor: '#e7f1ff',
-//             borderRadius: '0.25rem'
-//         }),
-//         multiValueLabel: (base) => ({
-//             ...base,
-//             color: '#0d6efd',
-//             fontSize: '0.875rem'
-//         }),
-//         multiValueRemove: (base) => ({
-//             ...base,
-//             color: '#0d6efd',
-//             borderRadius: '0 0.25rem 0.25rem 0',
-//             '&:hover': {
-//                 backgroundColor: '#0d6efd',
-//                 color: '#fff',
-//             }
-//         }),
-//         menu: (base) => ({
-//             ...base,
-//             borderRadius: '0.375rem',
-//             boxShadow: '0 0.5rem 1rem rgba(0,0,0,0.15)'
-//         })
-//     };
-
-//     return (
-//         <Modal 
-//             show={show} 
-//             onHide={handleClose} 
-//             centered 
-//             size="lg"
-//             backdrop="static"
-//         >
-//             <Modal.Header 
-//                 style={{
-//                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-//                     color: 'white',
-//                     border: 'none',
-//                     padding: '1.25rem 1.5rem'
-//                 }}
-//             >
-//                 <Modal.Title className="d-flex align-items-center gap-2" style={{ fontSize: '1.25rem' }}>
-//                     <i className={`ri-${editData ? 'edit' : 'add-circle'}-line`} style={{ fontSize: '1.5rem' }}></i>
-//                     <span>{editData ? 'Edit Team' : title}</span>
-//                 </Modal.Title>
-//                 <button 
-//                     type="button" 
-//                     className="btn-close btn-close-white"
-//                     onClick={handleClose}
-//                     style={{
-//                         opacity: 0.8,
-//                         filter: 'brightness(0) invert(1)'
-//                     }}
-//                 ></button>
-//             </Modal.Header>
-
-//             <Modal.Body style={{ padding: '1.75rem' }}>
-//                 {/* Row 1: Name and Jamiaat */}
-//                 <div className="row g-3 mb-3">
-//                     <div className="col-md-6">
-//                         <Form.Group>
-//                             <Form.Label className="fw-medium" style={{ fontSize: '0.875rem', color: '#495057' }}>
-//                                 Team Name <span className="text-danger">*</span>
-//                             </Form.Label>
-//                             <Form.Control
-//                                 type="text"
-//                                 name="name"
-//                                 value={formData.name}
-//                                 onChange={handleInputChange}
-//                                 placeholder="Enter team name"
-//                                 isInvalid={!!errors.name}
-//                                 disabled={isLoading}
-//                                 style={{ 
-//                                     height: '42px',
-//                                     fontSize: '0.875rem'
-//                                 }}
-//                             />
-//                             <Form.Control.Feedback type="invalid" style={{ fontSize: '0.813rem' }}>
-//                                 {errors.name}
-//                             </Form.Control.Feedback>
-//                         </Form.Group>
-//                     </div>
-
-//                     <div className="col-md-6">
-//                         <Form.Group>
-//                             <Form.Label className="fw-medium" style={{ fontSize: '0.875rem', color: '#495057' }}>
-//                                 Jamiaat <span className="text-danger">*</span>
-//                             </Form.Label>
-//                             <Select
-//                                 options={jamiaatOptions}
-//                                 value={formData.jamiaat}
-//                                 onChange={handlejamiaatChange}
-//                                 placeholder="Select jamiaat"
-//                                 isClearable
-//                                 isDisabled={isLoading || isLoadingJamiaats}
-//                                 isLoading={isLoadingJamiaats}
-//                                 styles={selectStyles}
-//                                 noOptionsMessage={() => "No jamiaats available"}
-//                             />
-//                             {errors.jamiaat && (
-//                                 <div className="invalid-feedback d-block" style={{ fontSize: '0.813rem' }}>
-//                                     {errors.jamiaat}
-//                                 </div>
-//                             )}
-//                         </Form.Group>
-//                     </div>
-//                 </div>
-
-//                 {/* Row 2: Jamaat */}
-//                 <div className="row g-3">
-//                     <div className="col-12">
-//                         <Form.Group>
-//                             <Form.Label className="fw-medium" style={{ fontSize: '0.875rem', color: '#495057' }}>
-//                                 Jamaat <span className="text-danger">*</span>
-//                             </Form.Label>
-//                             <Select
-//                                 options={jamaatOptions}
-//                                 value={formData.jamaat}
-//                                 onChange={handleJamaatChange}
-//                                 placeholder={
-//                                     !formData.jamiaat 
-//                                         ? "First select a jamiaat" 
-//                                         : isLoadingJamaats 
-//                                             ? "Loading jamaats..." 
-//                                             : "Select jamaat (multiple)"
-//                                 }
-//                                 isMulti
-//                                 isClearable
-//                                 isDisabled={isLoading || !formData.jamiaat || isLoadingJamaats}
-//                                 isLoading={isLoadingJamaats}
-//                                 styles={selectStyles}
-//                                 noOptionsMessage={() => 
-//                                     !formData.jamiaat 
-//                                         ? "Please select a jamiaat first" 
-//                                         : "No jamaats available for selected jamiaat"
-//                                 }
-//                             />
-//                             {errors.jamaat && (
-//                                 <div className="invalid-feedback d-block" style={{ fontSize: '0.813rem' }}>
-//                                     {errors.jamaat}
-//                                 </div>
-//                             )}
-//                         </Form.Group>
-//                     </div>
-//                 </div>
-//             </Modal.Body>
-
-//             <Modal.Footer 
-//                 className="justify-content-center gap-2" 
-//                 style={{ 
-//                     backgroundColor: '#f8f9fa',
-//                     borderTop: '1px solid #e9ecef',
-//                     padding: '1.25rem 1.5rem'
-//                 }}
-//             >
-//                 <Button 
-//                     variant="primary"
-//                     onClick={handleSave}
-//                     disabled={isLoading}
-//                     className="d-flex align-items-center gap-2"
-//                     style={{ 
-//                         minWidth: '110px',
-//                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-//                         border: 'none',
-//                         fontWeight: '500',
-//                         fontSize: '0.875rem'
-//                     }}
-//                 >
-//                     {isLoading ? (
-//                         <>
-//                             <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-//                             Saving...
-//                         </>
-//                     ) : (
-//                         <>
-//                             <i className="ri-save-line"></i>
-//                             Save
-//                         </>
-//                     )}
-//                 </Button>
-//                 <Button 
-//                     variant="secondary"
-//                     onClick={handleClose}
-//                     disabled={isLoading}
-//                     className="d-flex align-items-center gap-2"
-//                     style={{ 
-//                         minWidth: '110px',
-//                         fontWeight: '500',
-//                         fontSize: '0.875rem'
-//                     }}
-//                 >
-//                     <i className="ri-arrow-left-line"></i>
-//                     Back
-//                 </Button>
-//                 <Button 
-//                     variant="light"
-//                     onClick={handleClear}
-//                     disabled={isLoading}
-//                     className="d-flex align-items-center gap-2"
-//                     style={{ 
-//                         minWidth: '110px',
-//                         backgroundColor: '#e9ecef',
-//                         border: '1px solid #dee2e6',
-//                         color: '#495057',
-//                         fontWeight: '500',
-//                         fontSize: '0.875rem'
-//                     }}
-//                 >
-//                     <i className="ri-refresh-line"></i>
-//                     Clear
-//                 </Button>
-//             </Modal.Footer>
-//         </Modal>
-//     );
-// };
 
 
 const AddJamaat = ({ 
@@ -635,7 +55,7 @@ const AddJamaat = ({
             text: `${message}`,
             icon: 'success',
             timer: 2000,
-            timerProgressBar: true,
+            timerProgressBar: false,
             showConfirmButton: false,
             allowOutsideClick: false,
         }).then((result) => {
@@ -1397,6 +817,717 @@ const AddJamaat = ({
 };
 
 
+// const EditJamaat = ({ 
+//     show, 
+//     onClose, 
+//     onUpdate, 
+//     teamId,
+//     title = "Edit Team"
+// }) => {
+    
+//     // Form state
+//     const [formData, setFormData] = useState({
+//         name: '',
+//         jamiaat: null,
+//         jamaat: []
+//     });
+
+//     // Validation errors state
+//     const [errors, setErrors] = useState({
+//         name: '',
+//         jamiaat: '',
+//         jamaat: ''
+//     });
+
+//     // Loading states
+//     const [isLoading, setIsLoading] = useState(false);
+//     const [isLoadingTeamData, setIsLoadingTeamData] = useState(false);
+//     const [isLoadingJamiaats, setIsLoadingJamiaats] = useState(false);
+//     const [isLoadingJamaats, setIsLoadingJamaats] = useState(false);
+
+//     // Options state
+//     const [jamiaatOptions, setJamiaatOptions] = useState([]);
+//     const [jamaatOptions, setJamaatOptions] = useState([]);
+
+//     // Original data for comparison
+//     const [originalData, setOriginalData] = useState(null);
+
+//     // Fetch team data by ID when component shows
+//     useEffect(() => {
+//         if (show && teamId) {
+//             fetchTeamData(teamId);
+//             fetchAllJamiaats();
+//         }
+//     }, [show, teamId]);
+
+//     // Fetch Team Data by ID
+//     const fetchTeamData = async (id) => {
+//         setIsLoadingTeamData(true);
+//         try {
+//             const token = sessionStorage.getItem('access_token');
+            
+//             if (!token) {
+//                 toast.error('Authentication token not found. Please login again.');
+//                 setIsLoadingTeamData(false);
+//                 return;
+//             }
+            
+//             const response = await fetch(`${API_BASE_URL}/Team/GetTeamById`, {
+//                 method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                     'Authorization': `Bearer ${token}`
+//                 },
+//                 body: JSON.stringify({
+//                     team_id: id
+//                 })
+//             });
+
+//             const result = await response.json();
+
+//             if (response.status === 401) {
+//                 toast.error('Session expired. Please login again.');
+//                 return;
+//             }
+
+//             if (response.ok && result.success && result.data && result.data.length > 0) {
+//                 const teamData = result.data[0];
+                
+//                 const jamiaatObj = {
+//                     value: teamData.jamiaat_id,
+//                     label: teamData.jamiaat_name
+//                 };
+
+//                 const initialFormData = {
+//                     name: teamData.team_name || '',
+//                     jamiaat: jamiaatObj,
+//                     jamaat: [] // Will be populated by fetchJamaatsByJamiaat
+//                 };
+
+//                 setFormData(initialFormData);
+//                 setOriginalData(initialFormData);
+
+//                 // Fetch jamaats for the selected jamiaat and then load team's jamaats
+//                 if (teamData.jamiaat_id) {
+//                     await fetchJamaatsByJamiaat(teamData.jamiaat_id, teamData.team_id);
+//                 }
+//             } else {
+//                 toast.error(result.message || 'Failed to load team data');
+//             }
+//         } catch (error) {
+//             console.error('Error fetching team data:', error);
+//             toast.error('Error loading team data. Please try again.');
+//         } finally {
+//             setIsLoadingTeamData(false);
+//         }
+//     };
+
+//     // Fetch all Jamiaats
+//     const fetchAllJamiaats = async () => {
+//         setIsLoadingJamiaats(true);
+//         try {
+//             const token = sessionStorage.getItem('access_token');
+            
+//             if (!token) {
+//                 toast.error('Authentication token not found. Please login again.');
+//                 setIsLoadingJamiaats(false);
+//                 return;
+//             }
+            
+//             const response = await fetch(`${API_BASE_URL}/Team/GetAllJamiaats`, {
+//                 method: 'GET',
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                     'Authorization': `Bearer ${token}`
+//                 }
+//             });
+
+//             const result = await response.json();
+
+//             if (response.status === 401) {
+//                 toast.error('Session expired. Please login again.');
+//                 return;
+//             }
+
+//             if (response.ok && result.success) {
+//                 const options = result.data.map(item => ({
+//                     value: item.jamiaat_id,
+//                     label: item.jamiaat_name
+//                 }));
+//                 setJamiaatOptions(options);
+//             } else {
+//                 toast.error(result.message || 'Failed to load Jamiaats');
+//             }
+//         } catch (error) {
+//             console.error('Error fetching Jamiaats:', error);
+//             toast.error('Error loading Jamiaats. Please try again.');
+//         } finally {
+//             setIsLoadingJamiaats(false);
+//         }
+//     };
+
+//     // Fetch Jamaats based on selected Jamiaat and prefill selected jamaats for the team
+//     const fetchJamaatsByJamiaat = async (jamiaatId, currentTeamId = null) => {
+//         setIsLoadingJamaats(true);
+        
+//         try {
+//             const token = sessionStorage.getItem('access_token');
+            
+//             if (!token) {
+//                 toast.error('Authentication token not found. Please login again.');
+//                 setIsLoadingJamaats(false);
+//                 return;
+//             }
+            
+//             const response = await fetch(`${API_BASE_URL}/Team/GetAllJamaatsByJamiaat`, {
+//                 method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                     'Authorization': `Bearer ${token}`
+//                 },
+//                 body: JSON.stringify({
+//                     jamiaat_id: jamiaatId
+//                 })
+//             });
+
+//             const result = await response.json();
+
+//             if (response.status === 401) {
+//                 toast.error('Session expired. Please login again.');
+//                 return;
+//             }
+
+//             if (response.ok && result.success) {
+//                 const options = result.data.map(item => ({
+//                     value: item.jamaat_id,
+//                     label: item.jamaat_name
+//                 }));
+//                 setJamaatOptions(options);
+
+//                 // If loading initial team data, fetch and prefill selected jamaats
+//                 if (currentTeamId) {
+//                     await fetchTeamJamaats(currentTeamId);
+//                 }
+//             } else {
+//                 toast.error(result.message || 'Failed to load Jamaats for selected Jamiaat');
+//                 setJamaatOptions([]);
+//             }
+//         } catch (error) {
+//             console.error('Error fetching Jamaats:', error);
+//             toast.error('Error loading Jamaats. Please try again.');
+//             setJamaatOptions([]);
+//         } finally {
+//             setIsLoadingJamaats(false);
+//         }
+//     };
+
+//     // Fetch jamaats associated with the team (for prefilling)
+//     const fetchTeamJamaats = async (teamId) => {
+//         try {
+//             const token = sessionStorage.getItem('access_token');
+            
+//             if (!token) {
+//                 return;
+//             }
+            
+//             const response = await fetch(`${API_BASE_URL}/Team/GetJamaatsByTeamId`, {
+//                 method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                     'Authorization': `Bearer ${token}`
+//                 },
+//                 body: JSON.stringify({
+//                     team_id: teamId
+//                 })
+//             });
+
+//             const result = await response.json();
+
+//             if (response.ok && result.success && result.data) {
+//                 const selectedJamaats = result.data.map(item => ({
+//                     value: item.jamaat_id,
+//                     label: item.jamaat_name
+//                 }));
+
+//                 setFormData(prev => ({
+//                     ...prev,
+//                     jamaat: selectedJamaats
+//                 }));
+
+//                 setOriginalData(prev => ({
+//                     ...prev,
+//                     jamaat: selectedJamaats
+//                 }));
+//             }
+//         } catch (error) {
+//             console.error('Error fetching team jamaats:', error);
+//         }
+//     };
+
+//     // Handle form input changes
+//     const handleInputChange = (e) => {
+//         const { name, value } = e.target;
+//         setFormData(prev => ({
+//             ...prev,
+//             [name]: value
+//         }));
+        
+//         if (errors[name]) {
+//             setErrors(prev => ({
+//                 ...prev,
+//                 [name]: ''
+//             }));
+//         }
+//     };
+
+//     // Handle Jamiaat select change
+//     const handlejamiaatChange = (selectedOption) => {
+//         setFormData(prev => ({
+//             ...prev,
+//             jamiaat: selectedOption,
+//             jamaat: [] // Clear jamaats when jamiaat changes
+//         }));
+        
+//         if (errors.jamiaat) {
+//             setErrors(prev => ({
+//                 ...prev,
+//                 jamiaat: ''
+//             }));
+//         }
+        
+//         if (selectedOption?.value) {
+//             fetchJamaatsByJamiaat(selectedOption.value);
+//         } else {
+//             setJamaatOptions([]);
+//         }
+//     };
+
+//     // Handle Jamaat select change
+//     const handleJamaatChange = (selectedOptions) => {
+//         setFormData(prev => ({
+//             ...prev,
+//             jamaat: selectedOptions || []
+//         }));
+        
+//         if (errors.jamaat) {
+//             setErrors(prev => ({
+//                 ...prev,
+//                 jamaat: ''
+//             }));
+//         }
+//     };
+
+//     // Validate form
+//     const validateForm = () => {
+//         const newErrors = {
+//             name: '',
+//             jamiaat: '',
+//             jamaat: ''
+//         };
+
+//         let isValid = true;
+
+//         if (!formData.name.trim()) {
+//             newErrors.name = 'Team name is required';
+//             isValid = false;
+//         }
+
+//         if (!formData.jamiaat) {
+//             newErrors.jamiaat = 'Jamiaat is required';
+//             isValid = false;
+//         }
+
+//         if (!formData.jamaat || formData.jamaat.length === 0) {
+//             newErrors.jamaat = 'At least one Jamaat must be selected';
+//             isValid = false;
+//         }
+
+//         setErrors(newErrors);
+//         return isValid;
+//     };
+
+//     // Check if form has changes
+//     const hasChanges = () => {
+//         if (!originalData) return false;
+
+//         const nameChanged = formData.name !== originalData.name;
+//         const jamiaatChanged = formData.jamiaat?.value !== originalData.jamiaat?.value;
+        
+//         const currentJamaatIds = formData.jamaat.map(j => j.value).sort();
+//         const originalJamaatIds = (originalData.jamaat || []).map(j => j.value).sort();
+//         const jamaatChanged = JSON.stringify(currentJamaatIds) !== JSON.stringify(originalJamaatIds);
+
+//         return nameChanged || jamiaatChanged || jamaatChanged;
+//     };
+
+//     // Handle Update using PUT API
+//     const handleUpdate = async () => {
+//         if (!validateForm()) {
+//             toast.error('Please fill in all required fields');
+//             return;
+//         }
+
+//         if (!hasChanges()) {
+            
+//             return;
+//         }
+
+//         setIsLoading(true);
+
+//         try {
+//             const token = sessionStorage.getItem('access_token');
+
+//             if (!token) {
+//                 toast.error('Authentication token not found. Please login again.');
+//                 setIsLoading(false);
+//                 return;
+//             }
+
+//             const payload = {
+//                 team_id: teamId,
+//                 team_name: formData.name.trim(),
+//                 jamiaat_id: formData.jamiaat.value,
+//                 jamaat_ids: formData.jamaat.map(j => j.value)
+//             };
+
+//             const response = await fetch(`${API_BASE_URL}/Team/UpdateTeam`, {
+//                 method: 'PUT',
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                     'Authorization': `Bearer ${token}`
+//                 },
+//                 body: JSON.stringify(payload)
+//             });
+
+//             const result = await response.json();
+
+//             if (response.status === 401) {
+//                 toast.error('Session expired. Please login again.');
+//                 return;
+//             }
+
+//             if (response.ok && result.success) {
+//                 toast.success('Team updated successfully!');
+                
+//                 if (onUpdate) {
+//                     const dataToUpdate = {
+//                         team_id: teamId,
+//                         name: formData.name,
+//                         jamiaatId: formData.jamiaat.value,
+//                         jamiaatName: formData.jamiaat.label,
+//                         jamaatIds: formData.jamaat.map(j => j.value),
+//                         jamaatNames: formData.jamaat.map(j => j.label),
+//                         jamiaat: formData.jamiaat,
+//                         jamaat: formData.jamaat
+//                     };
+//                     onUpdate(dataToUpdate);
+//                 }
+                
+//                 handleClose();
+//             } else {
+//                 if (result.data?.result_code === 4) {
+//                     setErrors(prev => ({
+//                         ...prev,
+//                         name: 'Team name already exists'
+//                     }));
+//                     toast.error('Team name already exists');
+//                 } else if (result.data?.result_code === 0) {
+//                     toast.error('Team not found or update failed');
+//                 } else {
+//                     toast.error(result.message || 'Failed to update team');
+//                 }
+//             }
+//         } catch (error) {
+//             console.error('Error updating team:', error);
+//             toast.error('An error occurred while updating the team. Please try again.');
+//         } finally {
+//             setIsLoading(false);
+//         }
+//     };
+
+//     // Handle Close
+//     const handleClose = () => {
+//         setFormData({
+//             name: '',
+//             jamiaat: null,
+//             jamaat: []
+//         });
+//         setErrors({
+//             name: '',
+//             jamiaat: '',
+//             jamaat: ''
+//         });
+//         setOriginalData(null);
+//         setJamaatOptions([]);
+        
+//         if (onClose) {
+//             onClose();
+//         }
+//     };
+
+//     // Handle Reset
+//     const handleReset = () => {
+//         if (originalData) {
+//             setFormData({ ...originalData });
+//             setErrors({
+//                 name: '',
+//                 jamiaat: '',
+//                 jamaat: ''
+//             });
+//             toast.info('Form reset to original values');
+//         }
+//     };
+
+//     // Custom styles for react-select
+//     const selectStyles = {
+//         control: (base, state) => ({
+//             ...base,
+//             minHeight: '42px',
+//             borderColor: state.isFocused 
+//                 ? '#80bdff' 
+//                 : (errors.jamiaat || errors.jamaat) 
+//                     ? '#dc3545' 
+//                     : '#ced4da',
+//             borderRadius: '0.375rem',
+//             boxShadow: state.isFocused 
+//                 ? '0 0 0 0.2rem rgba(13,110,253,.25)' 
+//                 : 'none',
+//             '&:hover': {
+//                 borderColor: state.isFocused ? '#80bdff' : '#adb5bd'
+//             }
+//         }),
+//         placeholder: (base) => ({
+//             ...base,
+//             color: '#6c757d',
+//             fontSize: '0.875rem'
+//         }),
+//         multiValue: (base) => ({
+//             ...base,
+//             backgroundColor: '#e7f1ff',
+//             borderRadius: '0.25rem'
+//         }),
+//         multiValueLabel: (base) => ({
+//             ...base,
+//             color: '#0d6efd',
+//             fontSize: '0.875rem'
+//         }),
+//         multiValueRemove: (base) => ({
+//             ...base,
+//             color: '#0d6efd',
+//             borderRadius: '0 0.25rem 0.25rem 0',
+//             '&:hover': {
+//                 backgroundColor: '#0d6efd',
+//                 color: '#fff',
+//             }
+//         }),
+//         menu: (base) => ({
+//             ...base,
+//             borderRadius: '0.375rem',
+//             boxShadow: '0 0.5rem 1rem rgba(0,0,0,0.15)'
+//         })
+//     };
+
+//     return (
+//         <Modal 
+//             show={show} 
+//             onHide={handleClose} 
+//             centered 
+//             size="lg"
+//             backdrop="static"
+//         >
+//             <Modal.Header 
+//                 style={{
+//                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+//                     color: 'white',
+//                     border: 'none',
+//                     padding: '1.25rem 1.5rem'
+//                 }}
+//             >
+//                 <Modal.Title className="d-flex align-items-center gap-2" style={{ fontSize: '1.25rem' }}>
+//                     <i className="ri-edit-line" style={{ fontSize: '1.5rem' }}></i>
+//                     <span>{title}</span>
+//                 </Modal.Title>
+//                 <button 
+//                     type="button" 
+//                     className="btn-close btn-close-white"
+//                     onClick={handleClose}
+//                     style={{
+//                         opacity: 0.8,
+//                         filter: 'brightness(0) invert(1)'
+//                     }}
+//                 ></button>
+//             </Modal.Header>
+
+//             <Modal.Body style={{ padding: '1.75rem' }}>
+//                 {isLoadingTeamData ? (
+//                     <div className="text-center py-5">
+//                         <Spinner animation="border" variant="primary" role="status">
+//                             <span className="visually-hidden">Loading...</span>
+//                         </Spinner>
+//                         <p className="mt-3 text-muted">Loading team data...</p>
+//                     </div>
+//                 ) : (
+//                     <>
+//                         {/* Row 1: Name and Jamiaat */}
+//                         <div className="row g-3 mb-3">
+//                             <div className="col-md-6">
+//                                 <Form.Group>
+//                                     <Form.Label className="fw-medium" style={{ fontSize: '0.875rem', color: '#495057' }}>
+//                                         Team Name <span className="text-danger">*</span>
+//                                     </Form.Label>
+//                                     <Form.Control
+//                                         type="text"
+//                                         name="name"
+//                                         value={formData.name}
+//                                         onChange={handleInputChange}
+//                                         placeholder="Enter team name"
+//                                         isInvalid={!!errors.name}
+//                                         disabled={isLoading}
+//                                         style={{ 
+//                                             height: '42px',
+//                                             fontSize: '0.875rem'
+//                                         }}
+//                                     />
+//                                     <Form.Control.Feedback type="invalid" style={{ fontSize: '0.813rem' }}>
+//                                         {errors.name}
+//                                     </Form.Control.Feedback>
+//                                 </Form.Group>
+//                             </div>
+
+//                             <div className="col-md-6">
+//                                 <Form.Group>
+//                                     <Form.Label className="fw-medium" style={{ fontSize: '0.875rem', color: '#495057' }}>
+//                                         Jamiaat <span className="text-danger">*</span>
+//                                     </Form.Label>
+//                                     <Select
+//                                         options={jamiaatOptions}
+//                                         value={formData.jamiaat}
+//                                         onChange={handlejamiaatChange}
+//                                         placeholder="Select jamiaat"
+//                                         isClearable
+//                                         isDisabled={isLoading || isLoadingJamiaats}
+//                                         isLoading={isLoadingJamiaats}
+//                                         styles={selectStyles}
+//                                         noOptionsMessage={() => "No jamiaats available"}
+//                                     />
+//                                     {errors.jamiaat && (
+//                                         <div className="invalid-feedback d-block" style={{ fontSize: '0.813rem' }}>
+//                                             {errors.jamiaat}
+//                                         </div>
+//                                     )}
+//                                 </Form.Group>
+//                             </div>
+//                         </div>
+
+//                         {/* Row 2: Jamaat */}
+//                         <div className="row g-3">
+//                             <div className="col-12">
+//                                 <Form.Group>
+//                                     <Form.Label className="fw-medium" style={{ fontSize: '0.875rem', color: '#495057' }}>
+//                                         Jamaat <span className="text-danger">*</span>
+//                                     </Form.Label>
+//                                     <Select
+//                                         options={jamaatOptions}
+//                                         value={formData.jamaat}
+//                                         onChange={handleJamaatChange}
+//                                         placeholder={
+//                                             !formData.jamiaat 
+//                                                 ? "First select a jamiaat" 
+//                                                 : isLoadingJamaats 
+//                                                     ? "Loading jamaats..." 
+//                                                     : "Select jamaat (multiple)"
+//                                         }
+//                                         isMulti
+//                                         isClearable
+//                                         isDisabled={isLoading || !formData.jamiaat || isLoadingJamaats}
+//                                         isLoading={isLoadingJamaats}
+//                                         styles={selectStyles}
+//                                         noOptionsMessage={() => 
+//                                             !formData.jamiaat 
+//                                                 ? "Please select a jamiaat first" 
+//                                                 : "No jamaats available for selected jamiaat"
+//                                         }
+//                                     />
+//                                     {errors.jamaat && (
+//                                         <div className="invalid-feedback d-block" style={{ fontSize: '0.813rem' }}>
+//                                             {errors.jamaat}
+//                                         </div>
+//                                     )}
+//                                 </Form.Group>
+//                             </div>
+//                         </div>
+//                     </>
+//                 )}
+//             </Modal.Body>
+
+//             <Modal.Footer 
+//                 className="justify-content-center gap-2" 
+//                 style={{ 
+//                     backgroundColor: '#f8f9fa',
+//                     borderTop: '1px solid #e9ecef',
+//                     padding: '1.25rem 1.5rem'
+//                 }}
+//             >
+//                 <Button 
+//                     variant="primary"
+//                     onClick={handleUpdate}
+//                     disabled={isLoading || !hasChanges() || isLoadingTeamData}
+//                     className="d-flex align-items-center gap-2"
+//                     style={{ 
+//                         minWidth: '110px',
+//                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+//                         border: 'none',
+//                         fontWeight: '500',
+//                         fontSize: '0.875rem'
+//                     }}
+//                 >
+//                     {isLoading ? (
+//                         <>
+//                             <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+//                             Updating...
+//                         </>
+//                     ) : (
+//                         <>
+//                             <i className="ri-save-line"></i>
+//                             Update
+//                         </>
+//                     )}
+//                 </Button>
+//                 <Button 
+//                     variant="secondary"
+//                     onClick={handleClose}
+//                     disabled={isLoading}
+//                     className="d-flex align-items-center gap-2"
+//                     style={{ 
+//                         minWidth: '110px',
+//                         fontWeight: '500',
+//                         fontSize: '0.875rem'
+//                     }}
+//                 >
+//                     <i className="ri-arrow-left-line"></i>
+//                     Back
+//                 </Button>
+//                 <Button 
+//                     variant="light"
+//                     onClick={handleReset}
+//                     disabled={isLoading || !hasChanges() || isLoadingTeamData}
+//                     className="d-flex align-items-center gap-2"
+//                     style={{ 
+//                         minWidth: '110px',
+//                         backgroundColor: '#e9ecef',
+//                         border: '1px solid #dee2e6',
+//                         color: '#495057',
+//                         fontWeight: '500',
+//                         fontSize: '0.875rem'
+//                     }}
+//                 >
+//                     <i className="ri-refresh-line"></i>
+//                     Reset
+//                 </Button>
+//             </Modal.Footer>
+//         </Modal>
+//     );
+// };
 
 const EditJamaat = ({ 
     show, 
@@ -1433,6 +1564,23 @@ const EditJamaat = ({
     // Original data for comparison
     const [originalData, setOriginalData] = useState(null);
 
+    // Auto-close success alert using SweetAlert2
+    const showSuccessAlert = (message) => {
+        Swal.fire({
+            title: 'Success!',
+            text: `${message}`,
+            icon: 'success',
+            timer: 2000,
+            timerProgressBar: false,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (result.dismiss === Swal.DismissReason.timer) {
+                handleClose();
+            }
+        });
+    };
+
     // Fetch team data by ID when component shows
     useEffect(() => {
         if (show && teamId) {
@@ -1448,7 +1596,12 @@ const EditJamaat = ({
             const token = sessionStorage.getItem('access_token');
             
             if (!token) {
-                toast.error('Authentication token not found. Please login again.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Authentication token not found. Please login again.',
+                    confirmButtonText: 'OK'
+                });
                 setIsLoadingTeamData(false);
                 return;
             }
@@ -1467,7 +1620,12 @@ const EditJamaat = ({
             const result = await response.json();
 
             if (response.status === 401) {
-                toast.error('Session expired. Please login again.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Session expired. Please login again.',
+                    confirmButtonText: 'OK'
+                });
                 return;
             }
 
@@ -1493,11 +1651,21 @@ const EditJamaat = ({
                     await fetchJamaatsByJamiaat(teamData.jamiaat_id, teamData.team_id);
                 }
             } else {
-                toast.error(result.message || 'Failed to load team data');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.message || 'Failed to load team data',
+                    confirmButtonText: 'OK'
+                });
             }
         } catch (error) {
             console.error('Error fetching team data:', error);
-            toast.error('Error loading team data. Please try again.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error loading team data. Please try again.',
+                confirmButtonText: 'OK'
+            });
         } finally {
             setIsLoadingTeamData(false);
         }
@@ -1510,7 +1678,6 @@ const EditJamaat = ({
             const token = sessionStorage.getItem('access_token');
             
             if (!token) {
-                toast.error('Authentication token not found. Please login again.');
                 setIsLoadingJamiaats(false);
                 return;
             }
@@ -1525,23 +1692,15 @@ const EditJamaat = ({
 
             const result = await response.json();
 
-            if (response.status === 401) {
-                toast.error('Session expired. Please login again.');
-                return;
-            }
-
             if (response.ok && result.success) {
                 const options = result.data.map(item => ({
                     value: item.jamiaat_id,
                     label: item.jamiaat_name
                 }));
                 setJamiaatOptions(options);
-            } else {
-                toast.error(result.message || 'Failed to load Jamiaats');
             }
         } catch (error) {
             console.error('Error fetching Jamiaats:', error);
-            toast.error('Error loading Jamiaats. Please try again.');
         } finally {
             setIsLoadingJamiaats(false);
         }
@@ -1555,7 +1714,6 @@ const EditJamaat = ({
             const token = sessionStorage.getItem('access_token');
             
             if (!token) {
-                toast.error('Authentication token not found. Please login again.');
                 setIsLoadingJamaats(false);
                 return;
             }
@@ -1573,11 +1731,6 @@ const EditJamaat = ({
 
             const result = await response.json();
 
-            if (response.status === 401) {
-                toast.error('Session expired. Please login again.');
-                return;
-            }
-
             if (response.ok && result.success) {
                 const options = result.data.map(item => ({
                     value: item.jamaat_id,
@@ -1590,12 +1743,10 @@ const EditJamaat = ({
                     await fetchTeamJamaats(currentTeamId);
                 }
             } else {
-                toast.error(result.message || 'Failed to load Jamaats for selected Jamiaat');
                 setJamaatOptions([]);
             }
         } catch (error) {
             console.error('Error fetching Jamaats:', error);
-            toast.error('Error loading Jamaats. Please try again.');
             setJamaatOptions([]);
         } finally {
             setIsLoadingJamaats(false);
@@ -1744,12 +1895,16 @@ const EditJamaat = ({
     // Handle Update using PUT API
     const handleUpdate = async () => {
         if (!validateForm()) {
-            toast.error('Please fill in all required fields');
             return;
         }
 
         if (!hasChanges()) {
-            
+            Swal.fire({
+                icon: 'info',
+                title: 'No Changes',
+                text: 'No changes detected to update.',
+                confirmButtonText: 'OK'
+            });
             return;
         }
 
@@ -1759,9 +1914,7 @@ const EditJamaat = ({
             const token = sessionStorage.getItem('access_token');
 
             if (!token) {
-                toast.error('Authentication token not found. Please login again.');
-                setIsLoading(false);
-                return;
+                throw new Error('Authentication token not found. Please login again.');
             }
 
             const payload = {
@@ -1783,13 +1936,17 @@ const EditJamaat = ({
             const result = await response.json();
 
             if (response.status === 401) {
-                toast.error('Session expired. Please login again.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Session expired. Please login again.',
+                    confirmButtonText: 'OK'
+                });
                 return;
             }
 
             if (response.ok && result.success) {
-                toast.success('Team updated successfully!');
-                
+                // Call onUpdate callback before showing alert
                 if (onUpdate) {
                     const dataToUpdate = {
                         team_id: teamId,
@@ -1804,23 +1961,40 @@ const EditJamaat = ({
                     onUpdate(dataToUpdate);
                 }
                 
-                handleClose();
+                // Show auto-close success alert
+                showSuccessAlert(result.message || 'Team updated successfully!');
             } else {
                 if (result.data?.result_code === 4) {
                     setErrors(prev => ({
                         ...prev,
                         name: 'Team name already exists'
                     }));
-                    toast.error('Team name already exists');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Team name already exists',
+                        confirmButtonText: 'OK'
+                    });
                 } else if (result.data?.result_code === 0) {
-                    toast.error('Team not found or update failed');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Team not found or update failed',
+                        confirmButtonText: 'OK'
+                    });
                 } else {
-                    toast.error(result.message || 'Failed to update team');
+                    throw new Error(result.message || 'Failed to update team');
                 }
             }
         } catch (error) {
             console.error('Error updating team:', error);
-            toast.error('An error occurred while updating the team. Please try again.');
+            setErrors({ submit: error.message });
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'An error occurred while updating the team. Please try again.',
+                confirmButtonText: 'OK'
+            });
         } finally {
             setIsLoading(false);
         }
@@ -1855,7 +2029,13 @@ const EditJamaat = ({
                 jamiaat: '',
                 jamaat: ''
             });
-            toast.info('Form reset to original values');
+            Swal.fire({
+                icon: 'info',
+                title: 'Reset',
+                text: 'Form reset to original values',
+                timer: 1500,
+                showConfirmButton: false
+            });
         }
     };
 
@@ -1863,34 +2043,53 @@ const EditJamaat = ({
     const selectStyles = {
         control: (base, state) => ({
             ...base,
-            minHeight: '42px',
-            borderColor: state.isFocused 
-                ? '#80bdff' 
-                : (errors.jamiaat || errors.jamaat) 
-                    ? '#dc3545' 
-                    : '#ced4da',
-            borderRadius: '0.375rem',
-            boxShadow: state.isFocused 
-                ? '0 0 0 0.2rem rgba(13,110,253,.25)' 
-                : 'none',
+            minHeight: '38px',
+            borderColor: state.selectProps.error ? '#dc3545' : '#dee2e6',
             '&:hover': {
-                borderColor: state.isFocused ? '#80bdff' : '#adb5bd'
+                borderColor: state.selectProps.error ? '#dc3545' : '#86b7fe'
             }
+        }),
+        valueContainer: (base) => ({
+            ...base,
+            minHeight: '38px',
+            padding: '2px 8px',
+            maxHeight: '120px',
+            overflowY: 'auto'
+        }),
+        input: (base) => ({
+            ...base,
+            margin: '0',
+            padding: '0'
+        }),
+        indicatorsContainer: (base) => ({
+            ...base,
+            alignSelf: 'flex-start',
+            paddingTop: '8px'
+        }),
+        menu: (base) => ({
+            ...base,
+            zIndex: 9999
+        }),
+        menuList: (base) => ({
+            ...base,
+            maxHeight: '380px', // 38px per option x 10 options
+            overflowY: 'auto'
         }),
         placeholder: (base) => ({
             ...base,
-            color: '#6c757d',
-            fontSize: '0.875rem'
+            color: '#6c757d'
         }),
         multiValue: (base) => ({
             ...base,
             backgroundColor: '#e7f1ff',
-            borderRadius: '0.25rem'
+            borderRadius: '0.25rem',
+            margin: '2px'
         }),
         multiValueLabel: (base) => ({
             ...base,
             color: '#0d6efd',
-            fontSize: '0.875rem'
+            fontSize: '0.875rem',
+            padding: '3px 6px'
         }),
         multiValueRemove: (base) => ({
             ...base,
@@ -1900,217 +2099,378 @@ const EditJamaat = ({
                 backgroundColor: '#0d6efd',
                 color: '#fff',
             }
-        }),
-        menu: (base) => ({
-            ...base,
-            borderRadius: '0.375rem',
-            boxShadow: '0 0.5rem 1rem rgba(0,0,0,0.15)'
         })
     };
 
+    if (!show) return null;
+
     return (
-        <Modal 
-            show={show} 
-            onHide={handleClose} 
-            centered 
-            size="lg"
-            backdrop="static"
-        >
-            <Modal.Header 
-                style={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: 'white',
-                    border: 'none',
-                    padding: '1.25rem 1.5rem'
-                }}
-            >
-                <Modal.Title className="d-flex align-items-center gap-2" style={{ fontSize: '1.25rem' }}>
-                    <i className="ri-edit-line" style={{ fontSize: '1.5rem' }}></i>
-                    <span>{title}</span>
-                </Modal.Title>
-                <button 
-                    type="button" 
-                    className="btn-close btn-close-white"
-                    onClick={handleClose}
-                    style={{
-                        opacity: 0.8,
-                        filter: 'brightness(0) invert(1)'
-                    }}
-                ></button>
-            </Modal.Header>
+        <div className="modal-overlay" onClick={handleClose}>
+            <style>
+                {`
+                    .modal-overlay {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: rgba(0, 0, 0, 0.5);
+                        backdrop-filter: blur(4px);
+                        -webkit-backdrop-filter: blur(4px);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 1050;
+                        animation: fadeIn 0.2s ease;
+                    }
 
-            <Modal.Body style={{ padding: '1.75rem' }}>
-                {isLoadingTeamData ? (
-                    <div className="text-center py-5">
-                        <Spinner animation="border" variant="primary" role="status">
+                    @keyframes fadeIn {
+                        from { opacity: 0; }
+                        to { opacity: 1; }
+                    }
+
+                    @keyframes slideIn {
+                        from {
+                            opacity: 0;
+                            transform: translateY(-20px);
+                        }
+                        to {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+                    }
+
+                    .modal-form-container {
+                        background: #fff;
+                        border-radius: 12px;
+                        padding: 25px;
+                        width: 90%;
+                        max-width: 700px;
+                        max-height: 90vh;
+                        overflow-y: auto;
+                        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+                        animation: slideIn 0.3s ease;
+                        position: relative;
+                    }
+
+                    @media (max-width: 768px) {
+                        .modal-form-container {
+                            width: 95%;
+                            max-width: 100%;
+                            padding: 20px;
+                            max-height: 95vh;
+                        }
+                    }
+
+                    .modal-form-container .form-title {
+                        font-size: 20px;
+                        font-weight: 600;
+                        margin-bottom: 20px;
+                        color: #333;
+                        border-bottom: 2px solid #0d6efd;
+                        padding-bottom: 12px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                    }
+
+                    .modal-form-container .form-title .close-btn {
+                        background: none;
+                        border: none;
+                        font-size: 24px;
+                        color: #666;
+                        cursor: pointer;
+                        padding: 0;
+                        line-height: 1;
+                        transition: color 0.2s;
+                    }
+
+                    .modal-form-container .form-title .close-btn:hover {
+                        color: #dc3545;
+                    }
+
+                    .modal-form-container .form-buttons {
+                        display: flex;
+                        gap: 10px;
+                        margin-top: 25px;
+                        justify-content: center;
+                        padding-top: 15px;
+                        border-top: 1px solid #e9ecef;
+                    }
+
+                    .horizontal-form-group {
+                        display: flex;
+                        align-items: flex-start;
+                    }
+                    .horizontal-form-group .form-label {
+                        min-width: 120px;
+                        margin-bottom: 0;
+                        margin-right: 10px;
+                        font-weight: 500;
+                        text-align: right;
+                        white-space: nowrap;
+                        padding-top: 8px;
+                    }
+                    .horizontal-form-group .form-input-wrapper {
+                        flex: 1;
+                    }
+
+                    .form-row-inline {
+                        display: flex;
+                        gap: 20px;
+                        margin-bottom: 15px;
+                    }
+                    .form-row-inline .horizontal-form-group {
+                        flex: 1;
+                    }
+
+                    @media (max-width: 768px) {
+                        .form-row-inline {
+                            flex-direction: column;
+                            gap: 15px;
+                        }
+                        
+                        .horizontal-form-group {
+                            flex-direction: row !important;
+                            align-items: flex-start !important;
+                        }
+                        
+                        .horizontal-form-group .form-label {
+                            min-width: 100px !important;
+                            font-size: 13px;
+                            padding-top: 10px;
+                        }
+                        
+                        .modal-form-container .form-title {
+                            font-size: 18px;
+                        }
+                        
+                        .modal-form-container .form-title .close-btn {
+                            font-size: 20px;
+                        }
+                        
+                        .form-buttons {
+                            flex-wrap: wrap;
+                            gap: 8px !important;
+                        }
+                        
+                        .form-buttons .btn {
+                            flex: 1;
+                            min-width: calc(50% - 4px);
+                            font-size: 13px;
+                            padding: 8px 12px;
+                        }
+                        
+                        .form-buttons .btn i {
+                            font-size: 14px;
+                        }
+                    }
+
+                    @media (max-width: 480px) {
+                        .modal-form-container {
+                            padding: 15px;
+                        }
+                        
+                        .horizontal-form-group .form-label {
+                            min-width: 85px !important;
+                            font-size: 12px;
+                        }
+                        
+                        .form-control, 
+                        .form-control::placeholder {
+                            font-size: 13px;
+                        }
+                        
+                        .error-text {
+                            font-size: 11px;
+                        }
+                    }
+
+                    .error-text {
+                        color: #dc3545;
+                        font-size: 12px;
+                        margin-top: 4px;
+                    }
+
+                    .submit-error {
+                        background: #f8d7da;
+                        border: 1px solid #f5c2c7;
+                        border-radius: 6px;
+                        padding: 12px;
+                        margin-bottom: 15px;
+                        color: #842029;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                    }
+
+                    .form-control.is-invalid {
+                        border-color: #dc3545;
+                    }
+
+                    .btn-clear {
+                        background-color: #6c757d !important;
+                        border-color: #6c757d !important;
+                        color: #fff !important;
+                    }
+                    .btn-clear:hover {
+                        background-color: #5c636a !important;
+                        border-color: #565e64 !important;
+                    }
+
+                    .btn:disabled {
+                        opacity: 0.6;
+                        cursor: not-allowed;
+                    }
+
+                    .loading-overlay {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: rgba(255, 255, 255, 0.9);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: 12px;
+                        z-index: 10;
+                    }
+
+                    .spinner-border {
+                        width: 3rem;
+                        height: 3rem;
+                        border-width: 0.3em;
+                    }
+                `}
+            </style>
+
+            <div className="modal-form-container" onClick={(e) => e.stopPropagation()}>
+                {/* Loading Overlay */}
+                {(isLoading || isLoadingTeamData) && (
+                    <div className="loading-overlay">
+                        <div className="spinner-border text-primary" role="status">
                             <span className="visually-hidden">Loading...</span>
-                        </Spinner>
-                        <p className="mt-3 text-muted">Loading team data...</p>
+                        </div>
                     </div>
-                ) : (
-                    <>
-                        {/* Row 1: Name and Jamiaat */}
-                        <div className="row g-3 mb-3">
-                            <div className="col-md-6">
-                                <Form.Group>
-                                    <Form.Label className="fw-medium" style={{ fontSize: '0.875rem', color: '#495057' }}>
-                                        Team Name <span className="text-danger">*</span>
-                                    </Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleInputChange}
-                                        placeholder="Enter team name"
-                                        isInvalid={!!errors.name}
-                                        disabled={isLoading}
-                                        style={{ 
-                                            height: '42px',
-                                            fontSize: '0.875rem'
-                                        }}
-                                    />
-                                    <Form.Control.Feedback type="invalid" style={{ fontSize: '0.813rem' }}>
-                                        {errors.name}
-                                    </Form.Control.Feedback>
-                                </Form.Group>
-                            </div>
-
-                            <div className="col-md-6">
-                                <Form.Group>
-                                    <Form.Label className="fw-medium" style={{ fontSize: '0.875rem', color: '#495057' }}>
-                                        Jamiaat <span className="text-danger">*</span>
-                                    </Form.Label>
-                                    <Select
-                                        options={jamiaatOptions}
-                                        value={formData.jamiaat}
-                                        onChange={handlejamiaatChange}
-                                        placeholder="Select jamiaat"
-                                        isClearable
-                                        isDisabled={isLoading || isLoadingJamiaats}
-                                        isLoading={isLoadingJamiaats}
-                                        styles={selectStyles}
-                                        noOptionsMessage={() => "No jamiaats available"}
-                                    />
-                                    {errors.jamiaat && (
-                                        <div className="invalid-feedback d-block" style={{ fontSize: '0.813rem' }}>
-                                            {errors.jamiaat}
-                                        </div>
-                                    )}
-                                </Form.Group>
-                            </div>
-                        </div>
-
-                        {/* Row 2: Jamaat */}
-                        <div className="row g-3">
-                            <div className="col-12">
-                                <Form.Group>
-                                    <Form.Label className="fw-medium" style={{ fontSize: '0.875rem', color: '#495057' }}>
-                                        Jamaat <span className="text-danger">*</span>
-                                    </Form.Label>
-                                    <Select
-                                        options={jamaatOptions}
-                                        value={formData.jamaat}
-                                        onChange={handleJamaatChange}
-                                        placeholder={
-                                            !formData.jamiaat 
-                                                ? "First select a jamiaat" 
-                                                : isLoadingJamaats 
-                                                    ? "Loading jamaats..." 
-                                                    : "Select jamaat (multiple)"
-                                        }
-                                        isMulti
-                                        isClearable
-                                        isDisabled={isLoading || !formData.jamiaat || isLoadingJamaats}
-                                        isLoading={isLoadingJamaats}
-                                        styles={selectStyles}
-                                        noOptionsMessage={() => 
-                                            !formData.jamiaat 
-                                                ? "Please select a jamiaat first" 
-                                                : "No jamaats available for selected jamiaat"
-                                        }
-                                    />
-                                    {errors.jamaat && (
-                                        <div className="invalid-feedback d-block" style={{ fontSize: '0.813rem' }}>
-                                            {errors.jamaat}
-                                        </div>
-                                    )}
-                                </Form.Group>
-                            </div>
-                        </div>
-                    </>
                 )}
-            </Modal.Body>
 
-            <Modal.Footer 
-                className="justify-content-center gap-2" 
-                style={{ 
-                    backgroundColor: '#f8f9fa',
-                    borderTop: '1px solid #e9ecef',
-                    padding: '1.25rem 1.5rem'
-                }}
-            >
-                <Button 
-                    variant="primary"
-                    onClick={handleUpdate}
-                    disabled={isLoading || !hasChanges() || isLoadingTeamData}
-                    className="d-flex align-items-center gap-2"
-                    style={{ 
-                        minWidth: '110px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        border: 'none',
-                        fontWeight: '500',
-                        fontSize: '0.875rem'
-                    }}
-                >
-                    {isLoading ? (
-                        <>
-                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            Updating...
-                        </>
-                    ) : (
-                        <>
-                            <i className="ri-save-line"></i>
-                            Update
-                        </>
-                    )}
-                </Button>
-                <Button 
-                    variant="secondary"
-                    onClick={handleClose}
-                    disabled={isLoading}
-                    className="d-flex align-items-center gap-2"
-                    style={{ 
-                        minWidth: '110px',
-                        fontWeight: '500',
-                        fontSize: '0.875rem'
-                    }}
-                >
-                    <i className="ri-arrow-left-line"></i>
-                    Back
-                </Button>
-                <Button 
-                    variant="light"
-                    onClick={handleReset}
-                    disabled={isLoading || !hasChanges() || isLoadingTeamData}
-                    className="d-flex align-items-center gap-2"
-                    style={{ 
-                        minWidth: '110px',
-                        backgroundColor: '#e9ecef',
-                        border: '1px solid #dee2e6',
-                        color: '#495057',
-                        fontWeight: '500',
-                        fontSize: '0.875rem'
-                    }}
-                >
-                    <i className="ri-refresh-line"></i>
-                    Reset
-                </Button>
-            </Modal.Footer>
-        </Modal>
+                <div className="form-title">
+                    <span>
+                        <i className="ri-edit-line me-2"></i>
+                        {title}
+                    </span>
+                    <button className="close-btn" onClick={handleClose} title="Close" disabled={isLoading || isLoadingTeamData}>
+                        &times;
+                    </button>
+                </div>
+                
+                {/* Submit Error */}
+                {errors.submit && (
+                    <div className="submit-error">
+                        <i className="ri-error-warning-line"></i>
+                        <span>{errors.submit}</span>
+                    </div>
+                )}
+
+                {/* Row 1: Team Name and Jamiaat */}
+                <div className="form-row-inline">
+                    <div className="horizontal-form-group">
+                        <Form.Label>Team Name <span className="text-danger">*</span></Form.Label>
+                        <div className="form-input-wrapper">
+                            <Form.Control
+                                type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleInputChange}
+                                placeholder="Enter team name"
+                                className={errors.name ? 'is-invalid' : ''}
+                                disabled={isLoading || isLoadingTeamData}
+                            />
+                            {errors.name && <div className="error-text">{errors.name}</div>}
+                        </div>
+                    </div>
+
+                    <div className="horizontal-form-group">
+                        <Form.Label>Jamiaat <span className="text-danger">*</span></Form.Label>
+                        <div className="form-input-wrapper">
+                            <Select
+                                options={jamiaatOptions}
+                                value={formData.jamiaat}
+                                onChange={handlejamiaatChange}
+                                placeholder="Select jamiaat"
+                                isClearable
+                                isDisabled={isLoading || isLoadingJamiaats || isLoadingTeamData}
+                                isLoading={isLoadingJamiaats}
+                                styles={selectStyles}
+                                error={errors.jamiaat}
+                                noOptionsMessage={() => "No jamiaats available"}
+                            />
+                            {errors.jamiaat && <div className="error-text">{errors.jamiaat}</div>}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Row 2: Jamaat (Full Width) */}
+                <div className="form-row-inline">
+                    <div className="horizontal-form-group" style={{ width: '100%' }}>
+                        <Form.Label>Jamaat <span className="text-danger">*</span></Form.Label>
+                        <div className="form-input-wrapper">
+                            <Select
+                                options={jamaatOptions}
+                                value={formData.jamaat}
+                                onChange={handleJamaatChange}
+                                placeholder={
+                                    !formData.jamiaat 
+                                        ? "First select a jamiaat" 
+                                        : isLoadingJamaats 
+                                            ? "Loading jamaats..." 
+                                            : "Select jamaat (multiple)"
+                                }
+                                isMulti
+                                isClearable
+                                isDisabled={isLoading || !formData.jamiaat || isLoadingJamaats || isLoadingTeamData}
+                                isLoading={isLoadingJamaats}
+                                styles={selectStyles}
+                                error={errors.jamaat}
+                                noOptionsMessage={() => 
+                                    !formData.jamiaat 
+                                        ? "Please select a jamiaat first" 
+                                        : "No jamaats available for selected jamiaat"
+                                }
+                            />
+                            {errors.jamaat && <div className="error-text">{errors.jamaat}</div>}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="form-buttons">
+                    <Button 
+                        variant="primary" 
+                        onClick={handleUpdate} 
+                        disabled={isLoading || !hasChanges() || isLoadingTeamData}
+                    >
+                        <i className="ri-save-line me-1"></i> {isLoading ? 'Updating...' : 'Update'}
+                    </Button>
+                    <Button 
+                        variant="secondary" 
+                        onClick={handleClose} 
+                        disabled={isLoading || isLoadingTeamData}
+                    >
+                        <i className="ri-arrow-left-line me-1"></i> Back
+                    </Button>
+                    <Button 
+                        className="btn-clear" 
+                        onClick={handleReset} 
+                        disabled={isLoading || !hasChanges() || isLoadingTeamData}
+                    >
+                        <i className="ri-refresh-line me-1"></i> Reset
+                    </Button>
+                </div>
+            </div>
+        </div>
     );
 };
-
-
 
 const TeamTable = () => {
     // State management
