@@ -37,28 +37,28 @@ export const MenuItems = [
       },
 
       // Customs Pages
-      {
-        icon: <i className="fe fe-aperture"></i>,
-        type: "sub",
-        Name: "",
-        active: false,
-        selected: false,
-        badge: "",
-        badgetxt: "",
-        class: "",
-        title: "Customs Pages ",
-        children: [
+      // {
+      //   icon: <i className="fe fe-aperture"></i>,
+      //   type: "sub",
+      //   Name: "",
+      //   active: false,
+      //   selected: false,
+      //   badge: "",
+      //   badgetxt: "",
+      //   class: "",
+      //   title: "Customs Pages ",
+      //   children: [
      
-          {
-            path: `${import.meta.env.BASE_URL}custompages/error-404`,
-            title: "404 Error",
-            type: "link",
-            active: false,
-            selected: false,
-          },
+      //     {
+      //       path: `${import.meta.env.BASE_URL}custompages/error-404`,
+      //       title: "404 Error",
+      //       type: "link",
+      //       active: false,
+      //       selected: false,
+      //     },
         
-        ],
-      },
+      //   ],
+      // },
 
 
     // ],

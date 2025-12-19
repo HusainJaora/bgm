@@ -1166,7 +1166,7 @@ const Header = ({ local_varaiable, ThemeChanger }) => {
                                             <img alt="" className="rounded-circle" src={face6} />
                                         </div>
                                         <p className="text-fixed-white fs-18 fw-semibold mb-0">{fullName}</p>
-                                        <span className="fs-13 text-fixed-white">Premium Member</span>
+                                        {/* <span className="fs-13 text-fixed-white">Premium Member</span> */}
                                     </div>
                                 </div>
                                 <div>

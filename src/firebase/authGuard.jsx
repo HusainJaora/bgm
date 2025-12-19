@@ -13,8 +13,11 @@ export const isSessionValid = () => {
         return false;
     }
     
+    // const currentTime = Date.now();
+    // const expiryTime = parseInt(sessionExpiry, 10);
+    
     const currentTime = Date.now();
-    const expiryTime = parseInt(sessionExpiry, 10);
+    const expiryTime = parseInt(sessionExpiry, 60);
     
     // Check if session has expired
     if (currentTime >= expiryTime) {

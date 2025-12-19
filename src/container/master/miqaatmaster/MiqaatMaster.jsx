@@ -321,22 +321,38 @@ const AddMiqaat = ({
         }
 
         // Reporting Date validation
-        if (!formData.reportingDate) {
-            newErrors.reportingDate = 'Reporting Date is required';
-        } else if (formData.reportingDate < today) {
-            newErrors.reportingDate = 'Reporting Date cannot be in the past';
-        } else if (formData.reportingDate > formData.startDate) {
-            newErrors.reportingDate = 'Reporting Date cannot be after Start Date';
-        }
+        // if (!formData.reportingDate) {
+        //     newErrors.reportingDate = 'Reporting Date is required';
+        // } else if (formData.reportingDate < today) {
+        //     newErrors.reportingDate = 'Reporting Date cannot be in the past';
+        // } else if (formData.reportingDate > formData.startDate) {
+        //     newErrors.reportingDate = 'Reporting Date cannot be after Start Date';
+        // }
+        // Reporting Date validation
+if (!formData.reportingDate) {
+    newErrors.reportingDate = 'Reporting Date is required';
+} else if (formData.reportingDate < today) {
+    newErrors.reportingDate = 'Reporting Date cannot be in the past';
+} else if (formData.reportingDate < formData.startDate) {  // ✅ Changed from >
+    newErrors.reportingDate = 'Reporting Date cannot be before Start Date';
+} else if (formData.reportingDate > formData.endDate) {  // ✅ Added this check
+    newErrors.reportingDate = 'Reporting Date cannot be after End Date';
+}
 
-        // Reporting Time validation
-        if (!formData.reportingTime) {
-            newErrors.reportingTime = 'Reporting Time is required';
-        } else if (formData.reportingDate === today && formData.reportingTime < currentTime) {
-            newErrors.reportingTime = 'Reporting Time cannot be in the past for today';
-        } else if (formData.reportingDate === formData.startDate && formData.reportingTime >= formData.startTime) {
-            newErrors.reportingTime = 'Reporting Time must be before Start Time on the same day';
-        }
+// Reporting Time validation
+if (!formData.reportingTime) {
+    newErrors.reportingTime = 'Reporting Time is required';
+} else if (formData.reportingDate === today && formData.reportingTime < currentTime) {
+    newErrors.reportingTime = 'Reporting Time cannot be in the past for today';
+} 
+// else if (formData.reportingDate === formData.startDate && formData.reportingTime < formData.startTime) {  // ✅ Changed from >=
+//     newErrors.reportingTime = 'Reporting Time must be at or after Start Time on the same day';
+// } 
+else if (formData.reportingDate === formData.endDate && formData.reportingTime > formData.endTime) {  // ✅ Added this check
+    newErrors.reportingTime = 'Reporting Time cannot be after End Time on the same day';
+}
+
+        
 
         // Venue validation
         if (!formData.venue.trim()) {
@@ -837,7 +853,7 @@ const AddMiqaat = ({
                                         value={formData.reportingDate}
                                         onChange={handleInputChange}
                                         min={getTodayDate()}
-                                        max={formData.startDate || undefined}
+                                        max={formData.endDate || undefined}
                                         className={errors.reportingDate ? 'is-invalid' : ''}
                                         disabled={loading}
                                     />
@@ -1400,22 +1416,47 @@ const fetchMiqaatData = async (id) => {
         }
 
         // Reporting Date validation
-        if (!formData.reportingDate) {
-            newErrors.reportingDate = 'Reporting Date is required';
-        } else if (formData.reportingDate < today) {
-            newErrors.reportingDate = 'Reporting Date cannot be in the past';
-        } else if (formData.reportingDate > formData.startDate) {
-            newErrors.reportingDate = 'Reporting Date cannot be after Start Date';
-        }
+        // if (!formData.reportingDate) {
+        //     newErrors.reportingDate = 'Reporting Date is required';
+        // } else if (formData.reportingDate < today) {
+        //     newErrors.reportingDate = 'Reporting Date cannot be in the past';
+        // } else if (formData.reportingDate > formData.startDate) {
+        //     newErrors.reportingDate = 'Reporting Date cannot be after Start Date';
+        // }
 
-        // Reporting Time validation
-        if (!formData.reportingTime) {
-            newErrors.reportingTime = 'Reporting Time is required';
-        } else if (formData.reportingDate === today && formData.reportingTime < currentTime) {
-            newErrors.reportingTime = 'Reporting Time cannot be in the past for today';
-        } else if (formData.reportingDate === formData.startDate && formData.reportingTime >= formData.startTime) {
-            newErrors.reportingTime = 'Reporting Time must be before Start Time on the same day';
-        }
+        // // Reporting Time validation
+        // if (!formData.reportingTime) {
+        //     newErrors.reportingTime = 'Reporting Time is required';
+        // } else if (formData.reportingDate === today && formData.reportingTime < currentTime) {
+        //     newErrors.reportingTime = 'Reporting Time cannot be in the past for today';
+        // } else if (formData.reportingDate === formData.startDate && formData.reportingTime >= formData.startTime) {
+        //     newErrors.reportingTime = 'Reporting Time must be before Start Time on the same day';
+        // }
+
+
+        // Reporting Date validation    reporting date and time 
+if (!formData.reportingDate) {
+    newErrors.reportingDate = 'Reporting Date is required';
+} else if (formData.reportingDate < today) {
+    newErrors.reportingDate = 'Reporting Date cannot be in the past';
+} else if (formData.reportingDate < formData.startDate) {  // ✅ Changed from >
+    newErrors.reportingDate = 'Reporting Date cannot be before Start Date';
+} else if (formData.reportingDate > formData.endDate) {  // ✅ Added this check
+    newErrors.reportingDate = 'Reporting Date cannot be after End Date';
+}
+
+// Reporting Time validation           
+if (!formData.reportingTime) {
+    newErrors.reportingTime = 'Reporting Time is required';
+} else if (formData.reportingDate === today && formData.reportingTime < currentTime) {
+    newErrors.reportingTime = 'Reporting Time cannot be in the past for today';
+} 
+// else if (formData.reportingDate === formData.startDate && formData.reportingTime < formData.startTime) {  // ✅ Changed from >=
+//     newErrors.reportingTime = 'Reporting Time must be at or after Start Time on the same day';
+// } 
+else if (formData.reportingDate === formData.endDate && formData.reportingTime > formData.endTime) {  // ✅ Added this check
+    newErrors.reportingTime = 'Reporting Time cannot be after End Time on the same day';
+}
 
         // Venue validation
         if (!formData.venue.trim()) {
@@ -2003,7 +2044,7 @@ const fetchMiqaatData = async (id) => {
                                                 value={formData.reportingDate}
                                                 onChange={handleInputChange}
                                                 min={getTodayDate()}
-                                                max={formData.startDate || undefined}
+                                                max={formData.endDate|| undefined}
                                                 className={errors.reportingDate ? 'is-invalid' : ''}
                                                 disabled={isLoading}
                                             />
