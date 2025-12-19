@@ -14,10 +14,6 @@ import ConfirmDeleteModal from '../../../components/common/modalcloses/confirmde
 const API_BASE_URL = 'http://13.204.161.209:8080/BURHANI_GUARDS_API_TEST/api';
 
 
-
-
-
-
 const AddMiqaat = ({ 
     show, 
     onClose, 
@@ -72,7 +68,7 @@ const AddMiqaat = ({
         text: `${message}`,
         icon: 'success',
         timer: 2000,
-        timerProgressBar: true,
+        timerProgressBar: false,
         showConfirmButton: false,
         allowOutsideClick: false,
     }).then((result) => {
