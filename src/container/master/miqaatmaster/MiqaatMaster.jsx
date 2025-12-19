@@ -2238,7 +2238,7 @@ const MiqaatTable = () => {
                     jamiaatId: item.jamiaat_id,
                     quantity: item.quantity || 0,
                     isActive: item.is_active,
-                    reportingTime: extractTime(item.start_date)
+                    reportingTime: extractTime(item.reporting_time)
                 }));
 
                 setTableData(transformedData);
