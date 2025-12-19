@@ -1,58 +1,51 @@
-import React, { Fragment, useState, useEffect, useMemo } from 'react';
-import { Card, Row, Col } from 'react-bootstrap';
-import "gridjs/dist/theme/mermaid.css";
-import { Grid } from 'gridjs-react';
-import { html } from 'gridjs';
+import React, { useState, useEffect } from 'react';
+import Select from 'react-select';
+import Swal from 'sweetalert2';
 
-const DutiesTable = () => {
-    // State management
-    const [showAddForm, setShowAddForm] = useState(false);
-    const [showEditForm, setShowEditForm] = useState(false);
-    const [editDutyId, setEditDutyId] = useState(null);
-    const [tableData, setTableData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+const API_BASE_URL = 'http://13.204.161.209:8080/BURHANI_GUARDS_API_TEST/api';
 
-    // Modal state management
-    const [modals, setModals] = useState({});
-    const [deleteData, setDeleteData] = useState({
-        id: null,
-        name: ''
+const MiqaatTeamForm = () => {
+    // Form state
+    const [formData, setFormData] = useState({
+        miqaat: null,
+        jamiaat: null,
+        team: null,
+        location: '',
+        quota: ''
     });
 
-    // ✅ Force Grid refresh
-    const [gridKey, setGridKey] = useState(0);
+    // Options state
+    const [miqaatOptions, setMiqaatOptions] = useState([]);
+    const [jamiaatOptions, setJamiaatOptions] = useState([]);
+    const [teamOptions, setTeamOptions] = useState([]);
 
-    // Delete hook
-    const { deleteDuty, isDeleting, deleteError, resetDeleteState } = useDeleteDuty();
+    // Loading states
+    const [loading, setLoading] = useState(false);
+    const [loadingMiqaat, setLoadingMiqaat] = useState(false);
+    const [loadingJamiaat, setLoadingJamiaat] = useState(false);
+    const [loadingTeam, setLoadingTeam] = useState(false);
 
-    // Modal handlers
-    const handleModalOpen = (modalName) => {
-        setModals((prevModals) => ({ ...prevModals, [modalName]: true }));
-    };
+    // Validation errors
+    const [errors, setErrors] = useState({});
 
-    const handleModalClose = (modalName) => {
-        setModals((prevModals) => ({ ...prevModals, [modalName]: false }));
-        if (modalName === 'deleteModal') {
-            resetDeleteState();
-        }
-    };
+    // Fetch Miqaat and Jamiaat on component mount - Team is dependent on Jamiaat
+    useEffect(() => {
+        fetchMiqaatOptions();
+        fetchJamiaatOptions();
+    }, []);
 
-    // Fetch duties data from API
-    const fetchDuties = async () => {
+    // Fetch Miqaat Options
+    const fetchMiqaatOptions = async () => {
         try {
-            setLoading(true);
-            setError(null);
-
+            setLoadingMiqaat(true);
             const accessToken = sessionStorage.getItem('access_token');
             
             if (!accessToken) {
-                throw new Error('Access token not found. Please login again.');
+                console.error('Access token not found');
+                return;
             }
 
-            const apiUrl = `${API_BASE_URL}/Duty/GetAllDuties`;
-
-            const response = await fetch(apiUrl, {
+            const response = await fetch(`${API_BASE_URL}/Duty/GetListOfActiveMiqaat`, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
@@ -61,541 +54,642 @@ const DutiesTable = () => {
                 }
             });
 
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const textResponse = await response.text();
-                console.error('Non-JSON response received:', textResponse.substring(0, 200));
-                throw new Error(`Server returned non-JSON response. Status: ${response.status}`);
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data) {
+                    const options = result.data.map(item => ({
+                        value: item.miqaat_id,
+                        label: item.miqaat_name
+                    }));
+                    setMiqaatOptions(options);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching miqaat options:', error);
+        } finally {
+            setLoadingMiqaat(false);
+        }
+    };
+
+    // Fetch Jamiaat Options - INDEPENDENT
+    const fetchJamiaatOptions = async () => {
+        try {
+            setLoadingJamiaat(true);
+            const accessToken = sessionStorage.getItem('access_token');
+            
+            if (!accessToken) {
+                console.error('Access token not found');
+                return;
             }
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || errorData.detail || `HTTP error! status: ${response.status}`);
+            const response = await fetch(`${API_BASE_URL}/Team/GetAllJamiaats`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data) {
+                    const options = result.data.map(item => ({
+                        value: item.jamiaat_id,
+                        label: item.jamiaat_name
+                    }));
+                    setJamiaatOptions(options);
+                } else {
+                    setJamiaatOptions([]);
+                }
             }
+        } catch (error) {
+            console.error('Error fetching jamiaat options:', error);
+            setJamiaatOptions([]);
+        } finally {
+            setLoadingJamiaat(false);
+        }
+    };
+
+    // Fetch Team Options - DEPENDENT on Jamiaat selection
+    const fetchTeamOptions = async (jamiaatId) => {
+        try {
+            setLoadingTeam(true);
+            const accessToken = sessionStorage.getItem('access_token');
+            
+            if (!accessToken) {
+                console.error('Access token not found');
+                return;
+            }
+
+            // Fetch teams based on selected jamiaat
+            const response = await fetch(`${API_BASE_URL}/Duty/GetTeamsByJamiaat`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                    jamiaat_id: jamiaatId
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data) {
+                    const options = result.data.map(item => ({
+                        value: item.team_id,
+                        label: item.team_name
+                    }));
+                    setTeamOptions(options);
+                } else {
+                    setTeamOptions([]);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching team options:', error);
+            setTeamOptions([]);
+        } finally {
+            setLoadingTeam(false);
+        }
+    };
+
+    // Handle Miqaat change
+    const handleMiqaatChange = (selectedOption) => {
+        setFormData(prev => ({
+            ...prev,
+            miqaat: selectedOption
+        }));
+        
+        if (errors.miqaat) {
+            setErrors(prev => ({ ...prev, miqaat: '' }));
+        }
+    };
+
+    // Handle Jamiaat change - FETCHES TEAMS based on selected Jamiaat
+    const handleJamiaatChange = (selectedOption) => {
+        setFormData(prev => ({
+            ...prev,
+            jamiaat: selectedOption,
+            team: null // Reset team when jamiaat changes
+        }));
+        
+        if (errors.jamiaat) {
+            setErrors(prev => ({ ...prev, jamiaat: '' }));
+        }
+
+        // Fetch teams for the selected jamiaat
+        if (selectedOption?.value) {
+            fetchTeamOptions(selectedOption.value);
+        } else {
+            setTeamOptions([]);
+        }
+    };
+
+    // Handle Team change
+    const handleTeamChange = (selectedOption) => {
+        setFormData(prev => ({
+            ...prev,
+            team: selectedOption
+        }));
+        
+        if (errors.team) {
+            setErrors(prev => ({ ...prev, team: '' }));
+        }
+    };
+
+    // Handle Location change
+    const handleLocationChange = (e) => {
+        const value = e.target.value;
+        setFormData(prev => ({
+            ...prev,
+            location: value
+        }));
+        
+        if (errors.location) {
+            setErrors(prev => ({ ...prev, location: '' }));
+        }
+    };
+
+    // Handle Quota change
+    const handleQuotaChange = (e) => {
+        const value = e.target.value;
+        setFormData(prev => ({
+            ...prev,
+            quota: value
+        }));
+        
+        if (errors.quota) {
+            setErrors(prev => ({ ...prev, quota: '' }));
+        }
+    };
+
+    // Validate form
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!formData.miqaat) {
+            newErrors.miqaat = 'Please select a Miqaat';
+        }
+
+        if (!formData.jamiaat) {
+            newErrors.jamiaat = 'Please select a Jamiaat';
+        }
+
+        if (!formData.team) {
+            newErrors.team = 'Please select a Team';
+        }
+
+        if (!formData.location || !formData.location.trim()) {
+            newErrors.location = 'Please enter location';
+        }
+
+        if (!formData.quota) {
+            newErrors.quota = 'Please enter quota';
+        } else if (formData.quota <= 0) {
+            newErrors.quota = 'Quota must be greater than 0';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    // Handle Save
+    const handleSave = async () => {
+        if (!validateForm()) {
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const accessToken = sessionStorage.getItem('access_token');
+            
+            if (!accessToken) {
+                throw new Error('Access token not found. Please login again.');
+            }
+
+            // Prepare request body for InsertDuty API
+            const requestBody = {
+                team_id: formData.team.value,
+                miqaat_id: formData.miqaat.value,
+                quota: parseInt(formData.quota),
+                location: formData.location.trim()
+            };
+
+            console.log('Saving duty:', requestBody);
+
+            const response = await fetch(`${API_BASE_URL}/Duty/InsertDuty`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify(requestBody)
+            });
 
             const result = await response.json();
+            console.log('API Response:', result);
+            console.log('Response Status:', response.status);
+            console.log('Result Data:', result.data);
 
-            if (result.success && result.data) {
-                const transformedData = result.data.map((item, index) => ({
-                    id: item.duty_id,
-                    srNo: index + 1,
-                    teamName: item.team_name,
-                    miqaatName: item.miqaat_name,
-                    quota: item.quota,
-                    location: item.location,
-                    teamId: item.team_id,
-                    miqaatId: item.miqaat_id
-                }));
-                setTableData(transformedData);
+            // Handle success response
+            if (response.ok) {
+                // Check for result_code
+                const rawcode = result.data?.result_code;
+                const resultCode = Number(rawcode);
+                console.log('Result Code:', resultCode);
+
+                if (resultCode === 1) {
+                    // Success
+                    Swal.fire({
+                        title: 'Success!',
+                        text: result.message || 'Duty created successfully!',
+                        icon: 'success',
+                        timer: 2000,
+                        timerProgressBar: false,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                    });
+                    
+                    // Reset form after alert
+                    setTimeout(() => {
+                        handleClear();
+                    }, 2000);
+                } else if (resultCode === 4) {
+                    // Duplicate - same team, miqaat, and location
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Duplicate Duty',
+                        text: 'This duty assignment already exists (same team, miqaat, and location)',
+                        confirmButtonText: 'OK'
+                    });
+                } else if (resultCode === 0) {
+                    // Failure
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed',
+                        text: result.message || 'Failed to create duty',
+                        confirmButtonText: 'OK'
+                    });
+                // } else {
+                //     // Unknown result code
+                //     Swal.fire({
+                //         icon: 'info',
+                //         title: 'Notice',
+                //         text: result.message || 'Duty operation completed',
+                //         confirmButtonText: 'OK'
+                //     });
+                }
             } else {
-                throw new Error(result.message || 'Failed to fetch duties');
+                // Response not OK (4xx, 5xx errors)
+                throw new Error(result.message || `Server error: ${response.status}`);
             }
-        } catch (err) {
-            console.error('Error fetching duties:', err);
-            setError(err.message);
+
+        } catch (error) {
+            console.error('Error saving duty:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'An error occurred while saving',
+                confirmButtonText: 'OK'
+            });
         } finally {
             setLoading(false);
         }
     };
 
-    // Fetch data on component mount
-    useEffect(() => {
-        fetchDuties();
-    }, []);
-
-    // Total records count
-    const totalRecords = tableData.length;
-
-    // Handle Add button click
-    const handleAdd = () => {
-        setShowAddForm(true);
-    };
-
-    // Handle Close Add modal
-    const handleCloseAddModal = () => {
-        setShowAddForm(false);
-    };
-
-    // Handle Close Edit modal
-    const handleCloseEditModal = () => {
-        setShowEditForm(false);
-        setEditDutyId(null);
-    };
-
-    // Handle Save (for Add)
-    const handleSave = (data) => {
-        console.log('Saved Data:', data);
-        setShowAddForm(false);
-        
-        // Refresh the table
-        fetchDuties();
-        
-        // Force grid refresh
-        setGridKey(prev => prev + 1);
-    };
-
-    // Handle Update (for Edit)
-    const handleUpdate = (data) => {
-        console.log('Updated Data:', data);
-        setShowEditForm(false);
-        setEditDutyId(null);
-        
-        // Optimistic update - update the specific row in the table
-        setTableData(prevData => {
-            return prevData.map(item => {
-                if (item.id === data.duty_id) {
-                    return {
-                        ...item,
-                        teamName: data.teamName,
-                        miqaatName: data.miqaatName,
-                        quota: data.quota,
-                        location: data.location,
-                        teamId: data.teamId,
-                        miqaatId: data.miqaatId
-                    };
-                }
-                return item;
-            });
+    // Handle Clear
+    const handleClear = () => {
+        setFormData({
+            miqaat: null,
+            jamiaat: null,
+            team: null,
+            location: '',
+            quota: ''
         });
-        
-        // Force grid refresh
-        setGridKey(prev => prev + 1);
-        
-        // Background sync with server
-        setTimeout(() => {
-            fetchDuties();
-        }, 500);
+        setErrors({});
+        setTeamOptions([]);
     };
 
-    // Handle Edit
-    const handleEdit = (id) => {
-        console.log('Editing duty ID:', id);
-        setEditDutyId(id);
-        setShowEditForm(true);
+    // Custom styles for react-select
+    const selectStyles = {
+        control: (base, state) => ({
+            ...base,
+            minHeight: '48px',
+            borderColor: state.selectProps.error ? '#dc3545' : '#dee2e6',
+            borderRadius: '8px',
+            borderWidth: '2px',
+            boxShadow: 'none',
+            '&:hover': {
+                borderColor: state.selectProps.error ? '#dc3545' : '#0d6efd'
+            }
+        }),
+        placeholder: (base) => ({
+            ...base,
+            color: '#6c757d',
+            fontSize: '15px'
+        }),
+        singleValue: (base) => ({
+            ...base,
+            fontSize: '15px'
+        }),
+        dropdownIndicator: (base) => ({
+            ...base,
+            color: '#0d6efd',
+            '&:hover': {
+                color: '#0b5ed7'
+            }
+        })
     };
-
-    // Handle Delete - Show confirmation modal
-    const handleDelete = (id) => {
-        const dutyToDelete = tableData.find(item => item.id === id);
-        const dutyName = dutyToDelete ? `${dutyToDelete.teamName} - ${dutyToDelete.miqaatName}` : 'this duty';
-        
-        setDeleteData({ id, name: dutyName });
-        handleModalOpen('deleteModal');
-    };
-
-    // ✅ Confirm Delete - WITH ALL FIXES
-    const confirmDelete = async () => {
-        const dutyIdToDelete = deleteData.id;
-        
-        console.log('Deleting duty ID:', dutyIdToDelete);
-        
-        const result = await deleteDuty(dutyIdToDelete);
-        
-        if (result.success) {
-            console.log('Delete successful, updating UI...');
-            
-            // ✅ METHOD 1: Optimistic update - instant UI change
-            setTableData(prevData => {
-                const filtered = prevData.filter(item => item.id !== dutyIdToDelete);
-                // Recalculate serial numbers
-                return filtered.map((item, index) => ({
-                    ...item,
-                    srNo: index + 1
-                }));
-            });
-            
-            // ✅ METHOD 2: Force Grid to re-render
-            setGridKey(prev => prev + 1);
-            
-            // Close modal
-            handleModalClose('deleteModal');
-            setDeleteData({ id: null, name: '' });
-            
-            // ✅ METHOD 3: Background sync with server
-            setTimeout(async () => {
-                try {
-                    await fetchDuties();
-                    console.log('Table synced with server');
-                } catch (error) {
-                    console.error('Background sync failed:', error);
-                }
-            }, 500);
-        }
-    };
-
-    // Make functions globally accessible for Grid.js buttons
-    useEffect(() => {
-        window.handleEditDutyClick = handleEdit;
-        window.handleDeleteDutyClick = handleDelete;
-
-        return () => {
-            delete window.handleEditDutyClick;
-            delete window.handleDeleteDutyClick;
-        };
-    }, [tableData]);
-
-    // ✅ Format data for Grid.js with useMemo
-    const gridData = useMemo(() => {
-        console.log('Recalculating gridData, table length:', tableData.length);
-        return tableData.map(item => [
-            item.srNo,
-            item.teamName,
-            item.miqaatName,
-            item.quota,
-            item.location,
-            item.id
-        ]);
-    }, [tableData]);
 
     return (
-        <Fragment>
-            {/* Custom styles */}
+        <div className="miqaat-team-form-container">
             <style>
                 {`
-                    /* Search bar styles */
-                    #grid-duties-table .gridjs-search {
-                        width: 100%;
-                        margin-bottom: 1rem;
+                    .miqaat-team-form-container {
+                        background: #fff;
+                        border-radius: 12px;
+                        padding: 30px;
+                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+                        max-width: 800px;
+                        margin: 20px auto;
                     }
-                    #grid-duties-table .gridjs-search-input {
-                        width: 100%;
-                        padding: 8px 12px;
-                        border: 1px solid #dee2e6;
-                        border-radius: 6px;
-                        font-size: 14px;
+
+                    .form-title {
+                        font-size: 22px;
+                        font-weight: 600;
+                        margin-bottom: 25px;
+                        color: #333;
+                        border-bottom: 2px solid #0d6efd;
+                        padding-bottom: 12px;
                     }
-                    #grid-duties-table .gridjs-search-input:focus {
+
+                    .dropdown-row {
+                        margin-bottom: 20px;
+                    }
+
+                    .dropdown-label {
+                        font-weight: 500;
+                        font-size: 15px;
+                        color: #495057;
+                        margin-bottom: 8px;
+                        display: block;
+                    }
+
+                    .dropdown-label .required {
+                        color: #dc3545;
+                        margin-left: 4px;
+                    }
+
+                    .error-text {
+                        color: #dc3545;
+                        font-size: 13px;
+                        margin-top: 6px;
+                        display: block;
+                    }
+
+                    .two-column-row {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 20px;
+                        margin-bottom: 20px;
+                    }
+
+                    .form-input {
+                        width: 100%;
+                        height: 48px;
+                        padding: 0 15px;
+                        border: 2px solid #dee2e6;
+                        border-radius: 8px;
+                        font-size: 15px;
+                        transition: all 0.2s;
+                    }
+
+                    .form-input:focus {
                         outline: none;
                         border-color: #0d6efd;
-                        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-                    }
-                    #grid-duties-table .gridjs-wrapper {
-                        margin-top: 0.5rem;
-                    }
-                    #grid-duties-table .gridjs-container {
-                        padding: 0;
+                        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
                     }
 
-                    /* Sorting arrow styles */
-                    #grid-duties-table .gridjs-th-sort {
-                        position: relative;
-                        cursor: pointer;
+                    .form-input.is-invalid {
+                        border-color: #dc3545;
                     }
-                    #grid-duties-table .gridjs-th-content {
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        width: 100%;
-                    }
-                    #grid-duties-table button.gridjs-sort {
-                        background: none;
+
+                    .save-button {
+                        height: 48px;
+                        padding: 0 35px;
+                        background: #0d6efd;
                         border: none;
-                        width: 20px;
-                        height: 20px;
-                        position: relative;
+                        border-radius: 8px;
+                        color: #fff;
+                        font-weight: 500;
+                        font-size: 15px;
                         cursor: pointer;
-                        float: right;
-                        margin-left: 8px;
-                    }
-                    #grid-duties-table button.gridjs-sort::before,
-                    #grid-duties-table button.gridjs-sort::after {
-                        content: '';
-                        position: absolute;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        width: 0;
-                        height: 0;
-                        border-left: 5px solid transparent;
-                        border-right: 5px solid transparent;
-                    }
-                    #grid-duties-table button.gridjs-sort::before {
-                        top: 2px;
-                        border-bottom: 6px solid #bbb;
-                    }
-                    #grid-duties-table button.gridjs-sort::after {
-                        bottom: 2px;
-                        border-top: 6px solid #bbb;
-                    }
-                    #grid-duties-table button.gridjs-sort-asc::before {
-                        border-bottom-color: #333;
-                    }
-                    #grid-duties-table button.gridjs-sort-asc::after {
-                        border-top-color: #bbb;
-                    }
-                    #grid-duties-table button.gridjs-sort-desc::before {
-                        border-bottom-color: #bbb;
-                    }
-                    #grid-duties-table button.gridjs-sort-desc::after {
-                        border-top-color: #333;
-                    }
-                    #grid-duties-table .gridjs-sort-neutral,
-                    #grid-duties-table .gridjs-sort-asc,
-                    #grid-duties-table .gridjs-sort-desc {
-                        background-image: none !important;
+                        transition: all 0.2s;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 8px;
+                        white-space: nowrap;
+                        width: 100%;
+                        justify-content: center;
+                        margin-top: 20px;
                     }
 
-                    /* Pagination styles */
-                    #grid-duties-table .gridjs-footer {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        padding: 12px 0;
-                        border-top: 1px solid #e9ecef;
-                        margin-top: 1rem;
+                    .save-button:hover:not(:disabled) {
+                        background: #0b5ed7;
+                        transform: translateY(-1px);
+                        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
                     }
-                    #grid-duties-table .gridjs-pagination {
-                        display: flex;
-                        width: 100%;
-                        justify-content: space-between;
-                        align-items: center;
+
+                    .save-button:active:not(:disabled) {
+                        transform: translateY(0);
                     }
-                    #grid-duties-table .gridjs-summary {
-                        order: 1;
-                        color: #6c757d;
-                        font-size: 14px;
-                    }
-                    #grid-duties-table .gridjs-pages {
-                        order: 2;
-                        display: flex;
-                        gap: 5px;
-                    }
-                    #grid-duties-table .gridjs-pages button {
-                        min-width: 35px;
-                        height: 35px;
-                        border: 1px solid #dee2e6;
-                        background: #fff;
-                        border-radius: 6px;
-                        cursor: pointer;
-                        transition: all 0.2s ease;
-                        font-size: 14px;
-                    }
-                    #grid-duties-table .gridjs-pages button:hover:not(:disabled) {
-                        background: #e9ecef;
-                        border-color: #adb5bd;
-                    }
-                    #grid-duties-table .gridjs-pages button:disabled {
-                        opacity: 0.5;
+
+                    .save-button:disabled {
+                        opacity: 0.6;
                         cursor: not-allowed;
                     }
-                    #grid-duties-table .gridjs-pages button.gridjs-currentPage {
-                        background: var(--primary-color, #0d6efd);
-                        color: #fff;
-                        border-color: var(--primary-color, #0d6efd);
+
+                    .spinner {
+                        width: 16px;
+                        height: 16px;
+                        border: 2px solid rgba(255, 255, 255, 0.3);
+                        border-top-color: #fff;
+                        border-radius: 50%;
+                        animation: spin 0.6s linear infinite;
                     }
 
-                    /* Action buttons spacing */
-                    #grid-duties-table .btn-action-group {
-                        display: inline-flex;
-                        gap: 10px;
-                        align-items: center;
-                    }
-                    #grid-duties-table .btn-action-group .btn {
-                        margin: 0 !important;
+                    @keyframes spin {
+                        to { transform: rotate(360deg); }
                     }
 
-                    /* Loading and Error styles */
-                    .loading-container, .error-container {
-                        text-align: center;
-                        padding: 40px;
-                        color: #6c757d;
-                    }
-                    .error-container {
-                        color: #dc3545;
-                    }
-                    .error-container .error-message {
-                        background: #fff3cd;
-                        border: 1px solid #ffc107;
+                    .clear-button {
+                        margin-top: 10px;
+                        padding: 10px 20px;
+                        background: #6c757d;
+                        border: none;
                         border-radius: 8px;
-                        padding: 15px;
-                        margin: 20px auto;
-                        max-width: 600px;
-                        text-align: left;
+                        color: #fff;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        width: 100%;
                     }
-                    .error-container .error-title {
-                        font-weight: 600;
-                        color: #856404;
-                        margin-bottom: 10px;
+
+                    .clear-button:hover:not(:disabled) {
+                        background: #5c636a;
                     }
-                    .error-container .error-details {
-                        color: #856404;
-                        font-size: 14px;
-                        word-break: break-word;
+
+                    .clear-button:disabled {
+                        opacity: 0.6;
+                        cursor: not-allowed;
                     }
-                    .spinner-border {
-                        width: 3rem;
-                        height: 3rem;
-                        border-width: 0.3em;
+
+                    /* Responsive Design */
+                    @media (max-width: 768px) {
+                        .miqaat-team-form-container {
+                            padding: 20px;
+                        }
+
+                        .two-column-row {
+                            grid-template-columns: 1fr;
+                            gap: 15px;
+                        }
                     }
                 `}
             </style>
 
-            {/* Confirm Delete Modal */}
-            <ConfirmDeleteModal
-                show={modals['deleteModal'] || false}
-                onHide={() => handleModalClose('deleteModal')}
-                onConfirm={confirmDelete}
-                title="Delete Duty"
-                message="Are you sure you want to delete this duty? This will perform a soft delete - the duty will be marked as deleted but data remains in the database."
-                itemName={deleteData.name}
-                confirmText={isDeleting ? "Deleting..." : "Delete"}
-                cancelText="Cancel"
-                variant="danger"
-            />
+            <div className="form-title">
+                <i className="ri-file-list-3-line me-2"></i>
+                Duties Assign
+            </div>
 
-            {/* AddDuty Modal - For Creating New Duties */}
-            <AddDuty
-                show={showAddForm}
-                onClose={handleCloseAddModal}
-                onSave={handleSave}
-            />
+            {/* Row 1: Miqaat Dropdown */}
+            <div className="dropdown-row">
+                <label className="dropdown-label">
+                    Miqaat <span className="required">*</span>
+                </label>
+                <Select
+                    options={miqaatOptions}
+                    value={formData.miqaat}
+                    onChange={handleMiqaatChange}
+                    placeholder="Select Miqaat"
+                    isClearable
+                    styles={selectStyles}
+                    error={errors.miqaat}
+                    isDisabled={loading}
+                    isLoading={loadingMiqaat}
+                />
+                {errors.miqaat && <span className="error-text">{errors.miqaat}</span>}
+            </div>
 
-            {/* EditDuty Modal - For Editing Existing Duties */}
-            <EditDuty
-                show={showEditForm}
-                onClose={handleCloseEditModal}
-                onUpdate={handleUpdate}
-                dutyId={editDutyId}
-            />
+            {/* Row 2: Jamiaat and Team */}
+            <div className="two-column-row">
+                <div>
+                    <label className="dropdown-label">
+                        Jamiaat <span className="required">*</span>
+                    </label>
+                    <Select
+                        options={jamiaatOptions}
+                        value={formData.jamiaat}
+                        onChange={handleJamiaatChange}
+                        placeholder={loadingJamiaat ? "Loading..." : "Select Jamiaat"}
+                        isClearable
+                        styles={selectStyles}
+                        error={errors.jamiaat}
+                        isDisabled={loading}
+                        isLoading={loadingJamiaat}
+                    />
+                    {errors.jamiaat && <span className="error-text">{errors.jamiaat}</span>}
+                </div>
 
-            {/* Main Table */}
-            <Row>
-                <Col xl={12}>
-                    <Card className="custom-card">
-                        <Card.Header className="d-flex align-items-center justify-content-between">
-                            <div>
-                                <Card.Title className="mb-1">
-                                    Duties Master
-                                </Card.Title>
-                                <span className="badge bg-primary-transparent">
-                                    Total Records: {totalRecords}
-                                </span>
-                            </div>
-                            <div>
-                                <IconButton.IconButton
-                                    variant="primary"
-                                    icon="ri-add-line"
-                                    onClick={handleAdd}
-                                    title="Add New"
-                                />
-                            </div>
-                        </Card.Header>
-                        <Card.Body>
-                            {loading ? (
-                                <div className="loading-container">
-                                    <div className="spinner-border text-primary" role="status">
-                                        <span className="visually-hidden">Loading...</span>
-                                    </div>
-                                    <p className="mt-3">Loading duties data...</p>
-                                </div>
-                            ) : error ? (
-                                <div className="error-container">
-                                    <i className="ri-error-warning-line" style={{ fontSize: '48px' }}></i>
-                                    <div className="error-message">
-                                        <div className="error-title">⚠️ Error Loading Duties</div>
-                                        <div className="error-details">{error}</div>
-                                    </div>
-                                    <button 
-                                        className="btn btn-primary mt-3" 
-                                        onClick={fetchDuties}
-                                    >
-                                        <i className="ri-refresh-line me-2"></i>
-                                        Retry
-                                    </button>
-                                    <div className="mt-3">
-                                        <small className="text-muted">
-                                            Check browser console (F12) for more details
-                                        </small>
-                                    </div>
-                                </div>
-                            ) : tableData.length === 0 ? (
-                                <div className="loading-container">
-                                    <i className="ri-inbox-line" style={{ fontSize: '48px' }}></i>
-                                    <p className="mt-3">No duties found</p>
-                                    <button 
-                                        className="btn btn-primary mt-2" 
-                                        onClick={handleAdd}
-                                    >
-                                        <i className="ri-add-line me-2"></i>
-                                        Add First Duty
-                                    </button>
-                                </div>
-                            ) : (
-                                <div id="grid-duties-table">
-                                    <Grid
-                                        key={gridKey}
-                                        data={gridData}
-                                        sort={true}
-                                        search={{
-                                            enabled: true,
-                                            placeholder: 'Search duties...'
-                                        }}
-                                        columns={[
-                                            { 
-                                                name: 'Sr.No.',
-                                                width: '80px',
-                                                sort: true
-                                            }, 
-                                            { 
-                                                name: 'Team Name',
-                                                width: '180px',
-                                                sort: true
-                                            }, 
-                                            { 
-                                                name: 'Miqaat Name',
-                                                width: '180px',
-                                                sort: true
-                                            },
-                                            { 
-                                                name: 'Quota',
-                                                width: '100px',
-                                                sort: true
-                                            },
-                                            { 
-                                                name: 'Location',
-                                                width: '200px',
-                                                sort: true
-                                            }, 
-                                            {
-                                                name: 'Action',
-                                                width: '150px',
-                                                sort: false,
-                                                formatter: (cell) => html(`
-                                                    <div class="btn-action-group">
-                                                        <button 
-                                                            class="btn btn-sm btn-info-transparent btn-icon btn-wave" 
-                                                            title="Edit"
-                                                            onclick="handleEditDutyClick(${cell})"
-                                                        >
-                                                            <i class="ri-edit-line"></i>
-                                                        </button>
-                                                        <button 
-                                                            class="btn btn-sm btn-danger-transparent btn-icon btn-wave" 
-                                                            title="Delete"
-                                                            onclick="handleDeleteDutyClick(${cell})"
-                                                        >
-                                                            <i class="ri-delete-bin-line"></i>
-                                                        </button>
-                                                    </div>
-                                                `)
-                                            }
-                                        ]} 
-                                        pagination={{
-                                            limit: 5,
-                                            summary: true
-                                        }}
-                                        className={{
-                                            table: 'table table-bordered',
-                                            search: 'gridjs-search mb-3',
-                                        }}
-                                    />
-                                </div>
-                            )}
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-        </Fragment>
+                <div>
+                    <label className="dropdown-label">
+                        Team <span className="required">*</span>
+                    </label>
+                    <Select
+                        options={teamOptions}
+                        value={formData.team}
+                        onChange={handleTeamChange}
+                        placeholder={loadingTeam ? "Loading..." : "Select Team"}
+                        isClearable
+                        styles={selectStyles}
+                        error={errors.team}
+                        isDisabled={loading || loadingTeam || !formData.jamiaat}
+                        isLoading={loadingTeam}
+                        noOptionsMessage={() => formData.jamiaat ? "No teams found" : "Please select Jamiaat first"}
+                    />
+                    {errors.team && <span className="error-text">{errors.team}</span>}
+                </div>
+            </div>
+
+            {/* Row 3: Location and Quota */}
+            <div className="two-column-row">
+                <div>
+                    <label className="dropdown-label">
+                        Location <span className="required">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        className={`form-input ${errors.location ? 'is-invalid' : ''}`}
+                        placeholder="Enter location"
+                        value={formData.location}
+                        onChange={handleLocationChange}
+                        disabled={loading}
+                    />
+                    {errors.location && <span className="error-text">{errors.location}</span>}
+                </div>
+
+                <div>
+                    <label className="dropdown-label">
+                        Quota <span className="required">*</span>
+                    </label>
+                    <input
+                        type="number"
+                        className={`form-input ${errors.quota ? 'is-invalid' : ''}`}
+                        placeholder="Enter quota"
+                        value={formData.quota}
+                        onChange={handleQuotaChange}
+                        disabled={loading}
+                        min="1"
+                    />
+                    {errors.quota && <span className="error-text">{errors.quota}</span>}
+                </div>
+            </div>
+
+            {/* Save Button */}
+            <button 
+                className="save-button"
+                onClick={handleSave}
+                disabled={loading}
+            >
+                {loading ? (
+                    <>
+                        <span className="spinner"></span>
+                        Saving...
+                    </>
+                ) : (
+                    <>
+                        <i className="ri-save-line"></i>
+                        Save
+                    </>
+                )}
+            </button>
+
+            {/* Clear Button */}
+            <button 
+                className="clear-button"
+                onClick={handleClear}
+                disabled={loading}
+            >
+                <i className="ri-refresh-line me-2"></i>
+                Clear Form
+            </button>
+        </div>
     );
 };
 
-export default DutiesTable;
+export default MiqaatTeamForm;
