@@ -907,6 +907,7 @@ const EditJamaat = ({
             });
 
             const result = await response.json();
+            // console.log(result.data); 
 
             if (response.status === 401) {
                 Swal.fire({
@@ -1063,6 +1064,7 @@ const EditJamaat = ({
             });
 
             const result = await response.json();
+            console.log(result.data)
 
             if (response.ok && result.success && result.data) {
                 const selectedJamaats = result.data.map(item => ({
