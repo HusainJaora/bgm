@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import { LocalStorageBackup } from '../components/common/switcher/switcherdata';
 import { ThemeChanger } from "../redux/action";
 import bgmi from "../assets/images/burhaniguards_logo1.png";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const Login = ({ ThemeChanger }) => {
     const [passwordshow1, setpasswordshow1] = useState(false);
@@ -66,7 +67,8 @@ const Login = ({ ThemeChanger }) => {
         
         try {
             const response = await fetch(
-                'http://13.204.161.209:8080/BURHANI_GUARDS_API_TEST/api/Login/CheckLogin',
+                // 'http://13.204.161.209:8080/BURHANI_GUARDS_API_TEST/api/Login/CheckLogin',
+                `${API_BASE_URL}/Login/CheckLogin`,
                 {
                     method: 'POST',
                     headers: {

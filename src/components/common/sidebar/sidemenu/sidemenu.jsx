@@ -13,6 +13,7 @@ export const MenuItems = [
          
           { path: `${import.meta.env.BASE_URL}master/teammaster`, type: 'link', active: false, selected: false, title: 'Team Master' },
           { path: `${import.meta.env.BASE_URL}master/miqaatmaster`, type: 'link', active: false, selected: false, title: 'Miqaat Master' },
+          { path: `${import.meta.env.BASE_URL}master/venuemaster`, type: 'link', active: false, selected: false, title: 'Venue Master' }
           // {
           //   title: "Back Office", type: "sub", dirchange: false, selected: false, active: false, children: [
           //     { path: "", type: 'empty', active: false, dirchange: false, selected: false, title: 'Duties' },

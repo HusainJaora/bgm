@@ -7,9 +7,7 @@ import Select from 'react-select';
 import IconButton from '../../elements/button'; 
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ConfirmDeleteModal from '../../../components/common/modalcloses/confirmdelete'
-// import SuccessToaster from '../../../components/common/modalcloses/success';
-import Swal from 'sweetalert2';
+
 
 
 // API Base URL Configuration
@@ -1765,7 +1763,7 @@ const EditJamaat = ({
     );
 };
 
-const TeamTable = () => {
+const VenueTable = () => {
     // State management
     const [showAddForm, setShowAddForm] = useState(false);
     const [showEditForm, setShowEditForm] = useState(false);
@@ -2236,7 +2234,7 @@ const TeamTable = () => {
                         <Card.Header className="d-flex align-items-center justify-content-between">
                             <div>
                                 <Card.Title className="mb-1">
-                                    Team Master
+                                    Venue Master
                                 </Card.Title>
                                 <span className="badge bg-primary-transparent">
                                     Total Records: {totalRecords}
@@ -2257,7 +2255,7 @@ const TeamTable = () => {
                                     <div className="spinner-border text-primary" role="status">
                                         <span className="visually-hidden">Loading...</span>
                                     </div>
-                                    <p className="mt-3">Loading teams data...</p>
+                                    <p className="mt-3">Loading venue data...</p>
                                 </div>
                             ) : error ? (
                                 <div className="error-container">
@@ -2273,11 +2271,6 @@ const TeamTable = () => {
                                         <i className="ri-refresh-line me-2"></i>
                                         Retry
                                     </button>
-                                    <div className="mt-3">
-                                        <small className="text-muted">
-                                            Check browser console (F12) for more details
-                                        </small>
-                                    </div>
                                 </div>
                             ) : tableData.length === 0 ? (
                                 <div className="loading-container">
@@ -2299,7 +2292,7 @@ const TeamTable = () => {
                                         sort={true}
                                         search={{
                                             enabled: true,
-                                            placeholder: 'Search teams...'
+                                            placeholder: 'Search venue...'
                                         }}
                                         columns={[
                                             { 
@@ -2308,15 +2301,11 @@ const TeamTable = () => {
                                                 sort: true
                                             }, 
                                             { 
-                                                name: 'Team Name',
+                                                name: 'Venue Name',
                                                 width: '200px',
                                                 sort: true
                                             }, 
-                                            { 
-                                                name: 'Jamiaat',
-                                                width: '200px',
-                                                sort: true
-                                            }, 
+                                            
                                             {
                                                 name: 'Action',
                                                 width: '150px',
@@ -2374,4 +2363,4 @@ const TeamTable = () => {
     };
 
 
-export default TeamTable;
+export default VenueTable;
