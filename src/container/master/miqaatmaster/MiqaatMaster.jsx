@@ -15,6 +15,975 @@ import ConfirmDeleteModal from '../../../components/common/modalcloses/confirmde
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 
+// const AddMiqaat = ({ 
+//     show, 
+//     onClose, 
+//     onSave,
+//     editData = null,
+//     title = "Add New Miqaat"
+// }) => {
+    
+//     // Form state
+//     const [formData, setFormData] = useState({
+//         miqaatName: '',
+//         miqaatType: null,
+//         startDate: '',
+//         startTime: '',
+//         endDate: '',
+//         endTime: '',
+//         reportingDate: '',
+//         reportingTime: '',
+//         venue: '',
+//         jamaat: null,
+//         jamiaat: null,
+//         quantity: '',
+//         isActive: true
+//     });
+
+//     // Options state
+//     const [miqaatTypeOptions, setMiqaatTypeOptions] = useState([]);
+//     const [jamiaatOptions, setJamiaatOptions] = useState([]);
+//     const [jamaatOptions, setJamaatOptions] = useState([]);
+
+//     // Loading and error states
+//     const [loading, setLoading] = useState(false);
+//     const [loadingJamaat, setLoadingJamaat] = useState(false);
+//     const [errors, setErrors] = useState({});
+
+//     // Get today's date in YYYY-MM-DD format
+//     const getTodayDate = () => {
+//         const today = new Date();
+//         return today.toISOString().split('T')[0];
+//     };
+
+//     // Get current time in HH:MM format
+//     const getCurrentTime = () => {
+//         const now = new Date();
+//         return now.toTimeString().slice(0, 5);
+//     };
+
+//     // Auto-close success alert using SweetAlert2
+//     const showSuccessAlert = (message) => {
+//     Swal.fire({
+//         title: 'Success!',
+//         text: `${message}`,
+//         icon: 'success',
+//         timer: 2000,
+//         timerProgressBar: false,
+//         showConfirmButton: false,
+//         allowOutsideClick: false,
+//     }).then((result) => {
+//         if (result.dismiss === Swal.DismissReason.timer) {
+//             handleClose();
+//         }
+//     });
+// };
+
+
+//     // Fetch Miqaat Types on component mount
+//     useEffect(() => {
+//         if (show) {
+//             fetchMiqaatTypes();
+//             fetchJamiaat();
+//         }
+//     }, [show]);
+
+//     // Fetch Miqaat Types
+//     const fetchMiqaatTypes = async () => {
+//         try {
+//             const accessToken = sessionStorage.getItem('access_token');
+            
+//             if (!accessToken) {
+//                 console.error('Access token not found');
+//                 return;
+//             }
+
+//             const response = await fetch(`${API_BASE_URL}/Miqaat/GetAllMiqaatTypes`, {
+//                 method: 'GET',
+//                 headers: {
+//                     'Accept': 'application/json',
+//                     'Content-Type': 'application/json',
+//                     'Authorization': `Bearer ${accessToken}`
+//                 }
+//             });
+
+//             if (response.ok) {
+//                 const result = await response.json();
+//                 if (result.success && result.data) {
+//                     const options = result.data.map(item => ({
+//                         value: item.miqaat_type_id,
+//                         label: item.miqaat_type_name
+//                     }));
+//                     setMiqaatTypeOptions(options);
+//                 }
+//             }
+//         } catch (error) {
+//             console.error('Error fetching miqaat types:', error);
+//         }
+//     };
+
+//     // Fetch Jamiaat
+//     const fetchJamiaat = async () => {
+//         try {
+//             const accessToken = sessionStorage.getItem('access_token');
+            
+//             if (!accessToken) {
+//                 console.error('Access token not found');
+//                 return;
+//             }
+
+//             const response = await fetch(`${API_BASE_URL}/Team/GetAllJamiaats`, {
+//                 method: 'GET',
+//                 headers: {
+//                     'Accept': 'application/json',
+//                     'Content-Type': 'application/json',
+//                     'Authorization': `Bearer ${accessToken}`
+//                 }
+//             });
+
+//             if (response.ok) {
+//                 const result = await response.json();
+//                 if (result.success && result.data) {
+//                     const options = result.data.map(item => ({
+//                         value: item.jamiaat_id,
+//                         label: item.jamiaat_name
+//                     }));
+//                     setJamiaatOptions(options);
+//                 }
+//             }
+//         } catch (error) {
+//             console.error('Error fetching jamiaat:', error);
+//         }
+//     };
+
+//     // Fetch Jamaat based on selected Jamiaat
+//     const fetchJamaatByJamiaat = async (jamiaatId) => {
+//         try {
+//             setLoadingJamaat(true);
+//             const accessToken = sessionStorage.getItem('access_token');
+            
+//             if (!accessToken) {
+//                 console.error('Access token not found');
+//                 return;
+//             }
+
+//             const requestBody = {
+//                 jamiaat_id: jamiaatId
+//             };
+
+//             const response = await fetch(`${API_BASE_URL}/Miqaat/GetJamaatsByJamiaat`, {
+//                 method: 'POST',
+//                 headers: {
+//                     'Accept': 'application/json',
+//                     'Content-Type': 'application/json',
+//                     'Authorization': `Bearer ${accessToken}`
+//                 },
+//                 body: JSON.stringify(requestBody)
+//             });
+
+//             if (response.ok) {
+//                 const result = await response.json();
+//                 if (result.success && result.data) {
+//                     const options = result.data.map(item => ({
+//                         value: item.jamaat_id,
+//                         label: item.jamaat_name
+//                     }));
+//                     setJamaatOptions(options);
+//                 } else {
+//                     setJamaatOptions([]);
+//                 }
+//             } else {
+//                 console.error('Failed to fetch jamaat:', response.status);
+//                 setJamaatOptions([]);
+//             }
+//         } catch (error) {
+//             console.error('Error fetching jamaat:', error);
+//             setJamaatOptions([]);
+//         } finally {
+//             setLoadingJamaat(false);
+//         }
+//     };
+
+//     // Handle Jamiaat change - fetch related Jamaat
+//     const handleJamiaatChange = (selectedOption) => {
+//         setFormData(prev => ({
+//             ...prev,
+//             jamiaat: selectedOption,
+//             jamaat: null // Reset jamaat when jamiaat changes
+//         }));
+        
+//         if (errors.jamiaat) {
+//             setErrors(prev => ({ ...prev, jamiaat: '' }));
+//         }
+
+//         // Fetch jamaat for selected jamiaat
+//         if (selectedOption) {
+//             fetchJamaatByJamiaat(selectedOption.value);
+//         } else {
+//             setJamaatOptions([]);
+//         }
+//     };
+
+//     // Populate form when editing
+//     useEffect(() => {
+//         if (editData) {
+//             setFormData({
+//                 miqaatName: editData.miqaatName || '',
+//                 miqaatType: editData.miqaatTypeId ? 
+//                     { value: editData.miqaatTypeId, label: editData.miqaatType } 
+//                     : null,
+//                 startDate: editData.startDate || '',
+//                 startTime: editData.startTime || '',
+//                 endDate: editData.endDate || '',
+//                 endTime: editData.endTime || '',
+//                 reportingDate: editData.reportingDate || '',
+//                 reportingTime: editData.reportingTime || '',
+//                 venue: editData.venue || '',
+//                 jamaat: editData.jamaatId ? 
+//                     { value: editData.jamaatId, label: editData.jamaat }
+//                     : null,
+//                 jamiaat: editData.jamiaatId ? 
+//                     { value: editData.jamiaatId, label: editData.jamiaat }
+//                     : null,
+//                 quantity: editData.quantity || '',
+//                 isActive: editData.isActive !== undefined ? editData.isActive : true
+//             });
+//             setErrors({});
+//         } else {
+//             handleClear();
+//         }
+//     }, [editData, show]);
+
+//     // Handle form input changes
+//     const handleInputChange = (e) => {
+//         const { name, value, type, checked } = e.target;
+//         setFormData(prev => ({
+//             ...prev,
+//             [name]: type === 'checkbox' ? checked : value
+//         }));
+//         if (errors[name]) {
+//             setErrors(prev => ({ ...prev, [name]: '' }));
+//         }
+//     };
+
+//     // Handle Select changes
+//     const handleSelectChange = (name, selectedOption) => {
+//         setFormData(prev => ({
+//             ...prev,
+//             [name]: selectedOption
+//         }));
+//         if (errors[name]) {
+//             setErrors(prev => ({ ...prev, [name]: '' }));
+//         }
+//     };
+
+//     // Validate form
+//     const validateForm = () => {
+//         const newErrors = {};
+//         const today = getTodayDate();
+//         const currentTime = getCurrentTime();
+
+//         // Miqaat Name validation
+//         if (!formData.miqaatName.trim()) {
+//             newErrors.miqaatName = 'Miqaat Name is required';
+//         }
+
+//         // Miqaat Type validation
+//         if (!formData.miqaatType) {
+//             newErrors.miqaatType = 'Miqaat Type is required';
+//         }
+
+//         // Start Date validation
+//         if (!formData.startDate) {
+//             newErrors.startDate = 'Start Date is required';
+//         } else if (formData.startDate < today) {
+//             newErrors.startDate = 'Start Date cannot be in the past';
+//         }
+
+//         // Start Time validation
+//         if (!formData.startTime) {
+//             newErrors.startTime = 'Start Time is required';
+//         } else if (formData.startDate === today && formData.startTime < currentTime) {
+//             newErrors.startTime = 'Start Time cannot be in the past for today';
+//         }
+
+//         // End Date validation
+//         if (!formData.endDate) {
+//             newErrors.endDate = 'End Date is required';
+//         } else if (formData.endDate < formData.startDate) {
+//             newErrors.endDate = 'End Date cannot be before Start Date';
+//         }
+
+//         // End Time validation
+//         if (!formData.endTime) {
+//             newErrors.endTime = 'End Time is required';
+//         } else if (formData.endDate === formData.startDate && formData.endTime <= formData.startTime) {
+//             newErrors.endTime = 'End Time must be after Start Time on the same day';
+//         }
+
+//         // Reporting Date validation
+//         // if (!formData.reportingDate) {
+//         //     newErrors.reportingDate = 'Reporting Date is required';
+//         // } else if (formData.reportingDate < today) {
+//         //     newErrors.reportingDate = 'Reporting Date cannot be in the past';
+//         // } else if (formData.reportingDate > formData.startDate) {
+//         //     newErrors.reportingDate = 'Reporting Date cannot be after Start Date';
+//         // }
+//         // Reporting Date validation
+// if (!formData.reportingDate) {
+//     newErrors.reportingDate = 'Reporting Date is required';
+// } else if (formData.reportingDate < today) {
+//     newErrors.reportingDate = 'Reporting Date cannot be in the past';
+// } else if (formData.reportingDate < formData.startDate) {  // ✅ Changed from >
+//     newErrors.reportingDate = 'Reporting Date cannot be before Start Date';
+// } else if (formData.reportingDate > formData.endDate) {  // ✅ Added this check
+//     newErrors.reportingDate = 'Reporting Date cannot be after End Date';
+// }
+
+// // Reporting Time validation
+// if (!formData.reportingTime) {
+//     newErrors.reportingTime = 'Reporting Time is required';
+// } else if (formData.reportingDate === today && formData.reportingTime < currentTime) {
+//     newErrors.reportingTime = 'Reporting Time cannot be in the past for today';
+// } 
+// // else if (formData.reportingDate === formData.startDate && formData.reportingTime < formData.startTime) {  // ✅ Changed from >=
+// //     newErrors.reportingTime = 'Reporting Time must be at or after Start Time on the same day';
+// // } 
+// else if (formData.reportingDate === formData.endDate && formData.reportingTime > formData.endTime) {  // ✅ Added this check
+//     newErrors.reportingTime = 'Reporting Time cannot be after End Time on the same day';
+// }
+
+        
+
+//         // Venue validation
+//         if (!formData.venue.trim()) {
+//             newErrors.venue = 'Venue is required';
+//         }
+
+//         // Jamiaat validation
+//         if (!formData.jamiaat) {
+//             newErrors.jamiaat = 'Jamiaat is required';
+//         }
+
+//         // Jamaat validation
+//         if (!formData.jamaat) {
+//             newErrors.jamaat = 'Jamaat is required';
+//         }
+
+//         // Quantity validation
+//         if (!formData.quantity) {
+//             newErrors.quantity = 'Quantity is required';
+//         } else if (formData.quantity <= 0) {
+//             newErrors.quantity = 'Quantity must be greater than 0';
+//         }
+
+//         setErrors(newErrors);
+//         return Object.keys(newErrors).length === 0;
+//     };
+
+//     // Handle Save
+//     const handleSave = async () => {
+//         if (!validateForm()) {
+//             return;
+//         }
+
+//         setLoading(true);
+
+//         try {
+//             const accessToken = sessionStorage.getItem('access_token');
+            
+//             if (!accessToken) {
+//                 throw new Error('Access token not found. Please login again.');
+//             }
+
+//             // Combine date and time for start_date, end_date, and reporting_date
+//             const startDateTime = `${formData.startDate}T${formData.startTime}:00`;
+//             const endDateTime = `${formData.endDate}T${formData.endTime}:00`;
+//             const reportingDateTime = `${formData.reportingDate}T${formData.reportingTime}:00`;
+
+//             const requestBody = {
+//                 miqaat_name: formData.miqaatName,
+//                 miqaat_type_id: formData.miqaatType.value,
+//                 start_date: startDateTime,
+//                 end_date: endDateTime,
+//                 reporting_time: reportingDateTime,
+//                 venue: formData.venue,
+//                 jamaat_id: formData.jamaat.value,
+//                 jamiaat_id: formData.jamiaat.value,
+//                 quantity: parseInt(formData.quantity),
+//                 is_active: formData.isActive
+//             };
+
+//             console.log('Sending request:', requestBody);
+
+//             const response = await fetch(`${API_BASE_URL}/Miqaat/InsertMiqaat`, {
+//                 method: 'POST',
+//                 headers: {
+//                     'Accept': 'application/json',
+//                     'Content-Type': 'application/json',
+//                     'Authorization': `Bearer ${accessToken}`
+//                 },
+//                 body: JSON.stringify(requestBody)
+//             });
+
+//             const result = await response.json();
+
+//             if (response.ok && result.success) {
+//                 // Call onSave callback before showing alert
+//                 if (onSave) {
+//                     onSave(result.data);
+//                 }
+
+//                 // Show auto-close success alert
+//                 showSuccessAlert(result.message || 'Miqaat added successfully!');
+//             } else {
+//                 // Handle error response
+//                 if (result.data && result.data.result_code === 4) {
+//                     setErrors({ miqaatName: 'Miqaat name already exists' });
+//                     Swal.fire({
+//                         icon: 'error',
+//                         title: 'Error',
+//                         text: 'Miqaat name already exists',
+//                         confirmButtonText: 'OK'
+//                     });
+//                 } else {
+//                     throw new Error(result.message || 'Failed to add miqaat');
+//                 }
+//             }
+//         } catch (error) {
+//             console.error('Error saving miqaat:', error);
+//             setErrors({ submit: error.message });
+//             Swal.fire({
+//                 icon: 'error',
+//                 title: 'Error',
+//                 text: error.message || 'An error occurred while saving the miqaat',
+//                 confirmButtonText: 'OK'
+//             });
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     // Handle Close
+//     const handleClose = () => {
+//         handleClear();
+//         if (onClose) {
+//             onClose();
+//         }
+//     };
+
+//     // Handle Clear
+//     const handleClear = () => {
+//         setFormData({
+//             miqaatName: '',
+//             miqaatType: null,
+//             startDate: '',
+//             startTime: '',
+//             endDate: '',
+//             endTime: '',
+//             reportingDate: '',
+//             reportingTime: '',
+//             venue: '',
+//             jamaat: null,
+//             jamiaat: null,
+//             quantity: '',
+//             isActive: true
+//         });
+//         setErrors({});
+//         setJamaatOptions([]);
+//     };
+
+//     // Custom styles for react-select
+//     const selectStyles = {
+//         control: (base, state) => ({
+//             ...base,
+//             minHeight: '38px',
+//             borderColor: state.selectProps.error ? '#dc3545' : '#dee2e6',
+//             '&:hover': {
+//                 borderColor: state.selectProps.error ? '#dc3545' : '#86b7fe'
+//             }
+//         }),
+//         placeholder: (base) => ({
+//             ...base,
+//             color: '#6c757d'
+//         })
+//     };
+
+//     if (!show) return null;
+
+//     return (
+//         <div className="modal-overlay" onClick={handleClose}>
+//             <style>
+//                 {`
+//                     .modal-overlay {
+//                         position: fixed;
+//                         top: 0;
+//                         left: 0;
+//                         right: 0;
+//                         bottom: 0;
+//                         background: rgba(0, 0, 0, 0.5);
+//                         backdrop-filter: blur(4px);
+//                         -webkit-backdrop-filter: blur(4px);
+//                         display: flex;
+//                         align-items: center;
+//                         justify-content: center;
+//                         z-index: 1050;
+//                         animation: fadeIn 0.2s ease;
+//                     }
+
+//                     @keyframes fadeIn {
+//                         from { opacity: 0; }
+//                         to { opacity: 1; }
+//                     }
+
+//                     @keyframes slideIn {
+//                         from {
+//                             opacity: 0;
+//                             transform: translateY(-20px);
+//                         }
+//                         to {
+//                             opacity: 1;
+//                             transform: translateY(0);
+//                         }
+//                     }
+
+//                     .modal-form-container {
+//                         background: #fff;
+//                         border-radius: 12px;
+//                         padding: 25px;
+//                         width: 90%;
+//                         max-width: 900px;
+//                         max-height: 90vh;
+//                         overflow-y: auto;
+//                         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+//                         animation: slideIn 0.3s ease;
+//                         position: relative;
+//                     }
+
+//                     .modal-form-container .form-title {
+//                         font-size: 20px;
+//                         font-weight: 600;
+//                         margin-bottom: 20px;
+//                         color: #333;
+//                         border-bottom: 2px solid #0d6efd;
+//                         padding-bottom: 12px;
+//                         display: flex;
+//                         align-items: center;
+//                         justify-content: space-between;
+//                     }
+
+//                     .modal-form-container .form-title .close-btn {
+//                         background: none;
+//                         border: none;
+//                         font-size: 24px;
+//                         color: #666;
+//                         cursor: pointer;
+//                         padding: 0;
+//                         line-height: 1;
+//                         transition: color 0.2s;
+//                     }
+
+//                     .modal-form-container .form-title .close-btn:hover {
+//                         color: #dc3545;
+//                     }
+
+//                     .modal-form-container .form-buttons {
+//                         display: flex;
+//                         gap: 10px;
+//                         margin-top: 25px;
+//                         justify-content: center;
+//                         padding-top: 15px;
+//                         border-top: 1px solid #e9ecef;
+//                     }
+
+//                     .horizontal-form-group {
+//                         display: flex;
+//                         align-items: flex-start;
+//                     }
+//                     .horizontal-form-group .form-label {
+//                         min-width: 120px;
+//                         margin-bottom: 0;
+//                         margin-right: 10px;
+//                         font-weight: 500;
+//                         text-align: right;
+//                         white-space: nowrap;
+//                         padding-top: 8px;
+//                     }
+//                     .horizontal-form-group .form-input-wrapper {
+//                         flex: 1;
+//                     }
+
+//                     .form-row-inline {
+//                         display: flex;
+//                         gap: 20px;
+//                         margin-bottom: 15px;
+//                     }
+//                     .form-row-inline .horizontal-form-group {
+//                         flex: 1;
+//                     }
+
+//                     .datetime-row {
+//                         display: flex;
+//                         gap: 10px;
+//                     }
+//                     .datetime-row .date-input {
+//                         flex: 1.5;
+//                     }
+//                     .datetime-row .time-input {
+//                         flex: 1;
+//                     }
+
+//                     .error-text {
+//                         color: #dc3545;
+//                         font-size: 12px;
+//                         margin-top: 4px;
+//                     }
+
+//                     .submit-error {
+//                         background: #f8d7da;
+//                         border: 1px solid #f5c2c7;
+//                         border-radius: 6px;
+//                         padding: 12px;
+//                         margin-bottom: 15px;
+//                         color: #842029;
+//                         display: flex;
+//                         align-items: center;
+//                         gap: 10px;
+//                     }
+
+//                     .form-control.is-invalid {
+//                         border-color: #dc3545;
+//                     }
+
+//                     .checkbox-wrapper {
+//                         display: flex;
+//                         align-items: center;
+//                         padding-top: 8px;
+//                     }
+//                     .checkbox-wrapper .form-check {
+//                         margin-bottom: 0;
+//                     }
+//                     .checkbox-wrapper .form-check-input {
+//                         width: 18px;
+//                         height: 18px;
+//                         cursor: pointer;
+//                     }
+//                     .checkbox-wrapper .form-check-label {
+//                         cursor: pointer;
+//                         margin-left: 5px;
+//                     }
+
+//                     .btn-clear {
+//                         background-color: #6c757d !important;
+//                         border-color: #6c757d !important;
+//                         color: #fff !important;
+//                     }
+//                     .btn-clear:hover {
+//                         background-color: #5c636a !important;
+//                         border-color: #565e64 !important;
+//                     }
+
+//                     .btn:disabled {
+//                         opacity: 0.6;
+//                         cursor: not-allowed;
+//                     }
+
+//                     .loading-overlay {
+//                         position: absolute;
+//                         top: 0;
+//                         left: 0;
+//                         right: 0;
+//                         bottom: 0;
+//                         background: rgba(255, 255, 255, 0.9);
+//                         display: flex;
+//                         align-items: center;
+//                         justify-content: center;
+//                         border-radius: 12px;
+//                         z-index: 10;
+//                     }
+
+//                     .spinner-border {
+//                         width: 3rem;
+//                         height: 3rem;
+//                         border-width: 0.3em;
+//                     }
+//                 `}
+//             </style>
+
+//             <div className="modal-form-container" onClick={(e) => e.stopPropagation()}>
+//                 {/* Loading Overlay */}
+//                 {loading && (
+//                     <div className="loading-overlay">
+//                         <div className="spinner-border text-primary" role="status">
+//                             <span className="visually-hidden">Loading...</span>
+//                         </div>
+//                     </div>
+//                 )}
+
+//                 <div className="form-title">
+//                     <span>
+//                         <i className={`ri-${editData ? 'edit' : 'add-circle'}-line me-2`}></i>
+//                         {editData ? 'Edit Miqaat' : title}
+//                     </span>
+//                     <button className="close-btn" onClick={handleClose} title="Close" disabled={loading}>
+//                         &times;
+//                     </button>
+//                 </div>
+                
+//                 {/* Submit Error */}
+//                 {errors.submit && (
+//                     <div className="submit-error">
+//                         <i className="ri-error-warning-line"></i>
+//                         <span>{errors.submit}</span>
+//                     </div>
+//                 )}
+
+//                 {/* Row 1: Miqaat Name and Miqaat Type */}
+//                 <div className="form-row-inline">
+//                     <div className="horizontal-form-group">
+//                         <Form.Label>Miqaat Name <span className="text-danger">*</span></Form.Label>
+//                         <div className="form-input-wrapper">
+//                             <Form.Control
+//                                 type="text"
+//                                 name="miqaatName"
+//                                 value={formData.miqaatName}
+//                                 onChange={handleInputChange}
+//                                 placeholder="Enter Miqaat Name"
+//                                 className={errors.miqaatName ? 'is-invalid' : ''}
+//                                 disabled={loading}
+//                             />
+//                             {errors.miqaatName && <div className="error-text">{errors.miqaatName}</div>}
+//                         </div>
+//                     </div>
+
+//                     <div className="horizontal-form-group">
+//                         <Form.Label>Miqaat Type <span className="text-danger">*</span></Form.Label>
+//                         <div className="form-input-wrapper">
+//                             <Select
+//                                 options={miqaatTypeOptions}
+//                                 value={formData.miqaatType}
+//                                 onChange={(option) => handleSelectChange('miqaatType', option)}
+//                                 placeholder="Select Miqaat Type"
+//                                 isClearable
+//                                 styles={selectStyles}
+//                                 error={errors.miqaatType}
+//                                 isDisabled={loading}
+//                             />
+//                             {errors.miqaatType && <div className="error-text">{errors.miqaatType}</div>}
+//                         </div>
+//                     </div>
+//                 </div>
+
+//                 {/* Row 2: Start Date & Time and End Date & Time in one line */}
+//                 <div className="form-row-inline">
+//                     <div className="horizontal-form-group">
+//                         <Form.Label>Start Date & Time <span className="text-danger">*</span></Form.Label>
+//                         <div className="form-input-wrapper">
+//                             <div className="datetime-row">
+//                                 <div className="date-input">
+//                                     <Form.Control
+//                                         type="date"
+//                                         name="startDate"
+//                                         value={formData.startDate}
+//                                         onChange={handleInputChange}
+//                                         min={getTodayDate()}
+//                                         className={errors.startDate ? 'is-invalid' : ''}
+//                                         disabled={loading}
+//                                     />
+//                                     {errors.startDate && <div className="error-text">{errors.startDate}</div>}
+//                                 </div>
+//                                 <div className="time-input">
+//                                     <Form.Control
+//                                         type="time"
+//                                         name="startTime"
+//                                         value={formData.startTime}
+//                                         onChange={handleInputChange}
+//                                         className={errors.startTime ? 'is-invalid' : ''}
+//                                         disabled={loading}
+//                                         step="300"
+//                                     />
+//                                     {errors.startTime && <div className="error-text">{errors.startTime}</div>}
+//                                 </div>
+//                             </div>
+//                         </div>
+//                     </div>
+
+//                     <div className="horizontal-form-group">
+//                         <Form.Label>End Date & Time <span className="text-danger">*</span></Form.Label>
+//                         <div className="form-input-wrapper">
+//                             <div className="datetime-row">
+//                                 <div className="date-input">
+//                                     <Form.Control
+//                                         type="date"
+//                                         name="endDate"
+//                                         value={formData.endDate}
+//                                         onChange={handleInputChange}
+//                                         min={formData.startDate || getTodayDate()}
+//                                         className={errors.endDate ? 'is-invalid' : ''}
+//                                         disabled={loading}
+//                                     />
+//                                     {errors.endDate && <div className="error-text">{errors.endDate}</div>}
+//                                 </div>
+//                                 <div className="time-input">
+//                                     <Form.Control
+//                                         type="time"
+//                                         name="endTime"
+//                                         value={formData.endTime}
+//                                         onChange={handleInputChange}
+//                                         className={errors.endTime ? 'is-invalid' : ''}
+//                                         disabled={loading}
+//                                         step="300"
+//                                     />
+//                                     {errors.endTime && <div className="error-text">{errors.endTime}</div>}
+//                                 </div>
+//                             </div>
+//                         </div>
+//                     </div>
+//                 </div>
+
+//                 {/* Row 3: Reporting Date & Time and Venue in one line */}
+//                 <div className="form-row-inline">
+//                     <div className="horizontal-form-group">
+//                         <Form.Label>Reporting Date & Time <span className="text-danger">*</span></Form.Label>
+//                         <div className="form-input-wrapper">
+//                             <div className="datetime-row">
+//                                 <div className="date-input">
+//                                     <Form.Control
+//                                         type="date"
+//                                         name="reportingDate"
+//                                         value={formData.reportingDate}
+//                                         onChange={handleInputChange}
+//                                         min={getTodayDate()}
+//                                         max={formData.endDate || undefined}
+//                                         className={errors.reportingDate ? 'is-invalid' : ''}
+//                                         disabled={loading}
+//                                     />
+//                                     {errors.reportingDate && <div className="error-text">{errors.reportingDate}</div>}
+//                                 </div>
+//                                 <div className="time-input">
+//                                     <Form.Control
+//                                         type="time"
+//                                         name="reportingTime"
+//                                         value={formData.reportingTime}
+//                                         onChange={handleInputChange}
+//                                         className={errors.reportingTime ? 'is-invalid' : ''}
+//                                         disabled={loading}
+//                                         step="300"
+//                                     />
+//                                     {errors.reportingTime && <div className="error-text">{errors.reportingTime}</div>}
+//                                 </div>
+//                             </div>
+//                         </div>
+//                     </div>
+
+//                     <div className="horizontal-form-group">
+//                         <Form.Label>Venue <span className="text-danger">*</span></Form.Label>
+//                         <div className="form-input-wrapper">
+//                             <Form.Control
+//                                 type="text"
+//                                 name="venue"
+//                                 value={formData.venue}
+//                                 onChange={handleInputChange}
+//                                 placeholder="Enter Venue"
+//                                 className={errors.venue ? 'is-invalid' : ''}
+//                                 disabled={loading}
+//                             />
+//                             {errors.venue && <div className="error-text">{errors.venue}</div>}
+//                         </div>
+//                     </div>
+//                 </div>
+
+//                 {/* Row 4: Jamiaat and Jamaat */}
+//                 <div className="form-row-inline">
+//                     <div className="horizontal-form-group">
+//                         <Form.Label>Jamiaat <span className="text-danger">*</span></Form.Label>
+//                         <div className="form-input-wrapper">
+//                             <Select
+//                                 options={jamiaatOptions}
+//                                 value={formData.jamiaat}
+//                                 onChange={handleJamiaatChange}
+//                                 placeholder="Select Jamiaat"
+//                                 isClearable
+//                                 styles={selectStyles}
+//                                 error={errors.jamiaat}
+//                                 isDisabled={loading}
+//                             />
+//                             {errors.jamiaat && <div className="error-text">{errors.jamiaat}</div>}
+//                         </div>
+//                     </div>
+
+//                     <div className="horizontal-form-group">
+//                         <Form.Label>Jamaat <span className="text-danger">*</span></Form.Label>
+//                         <div className="form-input-wrapper">
+//                             <Select
+//                                 options={jamaatOptions}
+//                                 value={formData.jamaat}
+//                                 onChange={(option) => handleSelectChange('jamaat', option)}
+//                                 placeholder={loadingJamaat ? "Loading..." : "Select Jamaat"}
+//                                 isClearable
+//                                 styles={selectStyles}
+//                                 error={errors.jamaat}
+//                                 isDisabled={loading || loadingJamaat || !formData.jamiaat}
+//                                 noOptionsMessage={() => formData.jamiaat ? "No jamaat found" : "Please select Jamiaat first"}
+//                             />
+//                             {errors.jamaat && <div className="error-text">{errors.jamaat}</div>}
+//                         </div>
+//                     </div>
+//                 </div>
+
+//                 {/* Row 5: Quantity and Is Active */}
+//                 <div className="form-row-inline">
+//                     <div className="horizontal-form-group">
+//                         <Form.Label>Quantity <span className="text-danger">*</span></Form.Label>
+//                         <div className="form-input-wrapper">
+//                             <Form.Control
+//                                 type="number"
+//                                 name="quantity"
+//                                 value={formData.quantity}
+//                                 onChange={handleInputChange}
+//                                 placeholder="Enter Quantity"
+//                                 min="1"
+//                                 className={errors.quantity ? 'is-invalid' : ''}
+//                                 disabled={loading}
+//                             />
+//                             {errors.quantity && <div className="error-text">{errors.quantity}</div>}
+//                         </div>
+//                     </div>
+
+//                     <div className="horizontal-form-group">
+//                         <Form.Label></Form.Label>
+//                         <div className="form-input-wrapper">
+//                             <div className="checkbox-wrapper">
+//                                 <Form.Check
+//                                     type="checkbox"
+//                                     id="isActive"
+//                                     name="isActive"
+//                                     checked={formData.isActive}
+//                                     onChange={handleInputChange}
+//                                     label="Active"
+//                                     disabled={loading}
+//                                 />
+//                             </div>
+//                         </div>
+//                     </div>
+//                 </div>
+
+//                 <div className="form-buttons">
+//                     <Button variant="primary" onClick={handleSave} disabled={loading}>
+//                         <i className="ri-save-line me-1"></i> {loading ? 'Saving...' : 'Save'}
+//                     </Button>
+//                     <Button variant="secondary" onClick={handleClose} disabled={loading}>
+//                         <i className="ri-arrow-left-line me-1"></i> Back
+//                     </Button>
+//                     <Button className="btn-clear" onClick={handleClear} disabled={loading}>
+//                         <i className="ri-refresh-line me-1"></i> Clear
+//                     </Button>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
+
 const AddMiqaat = ({ 
     show, 
     onClose, 
@@ -64,21 +1033,20 @@ const AddMiqaat = ({
 
     // Auto-close success alert using SweetAlert2
     const showSuccessAlert = (message) => {
-    Swal.fire({
-        title: 'Success!',
-        text: `${message}`,
-        icon: 'success',
-        timer: 2000,
-        timerProgressBar: false,
-        showConfirmButton: false,
-        allowOutsideClick: false,
-    }).then((result) => {
-        if (result.dismiss === Swal.DismissReason.timer) {
-            handleClose();
-        }
-    });
-};
-
+        Swal.fire({
+            title: 'Success!',
+            text: `${message}`,
+            icon: 'success',
+            timer: 2000,
+            timerProgressBar: false,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (result.dismiss === Swal.DismissReason.timer) {
+                handleClose();
+            }
+        });
+    };
 
     // Fetch Miqaat Types on component mount
     useEffect(() => {
@@ -280,8 +1248,6 @@ const AddMiqaat = ({
     // Validate form
     const validateForm = () => {
         const newErrors = {};
-        const today = getTodayDate();
-        const currentTime = getCurrentTime();
 
         // Miqaat Name validation
         if (!formData.miqaatName.trim()) {
@@ -296,64 +1262,52 @@ const AddMiqaat = ({
         // Start Date validation
         if (!formData.startDate) {
             newErrors.startDate = 'Start Date is required';
-        } else if (formData.startDate < today) {
-            newErrors.startDate = 'Start Date cannot be in the past';
         }
 
         // Start Time validation
         if (!formData.startTime) {
             newErrors.startTime = 'Start Time is required';
-        } else if (formData.startDate === today && formData.startTime < currentTime) {
-            newErrors.startTime = 'Start Time cannot be in the past for today';
         }
 
         // End Date validation
         if (!formData.endDate) {
             newErrors.endDate = 'End Date is required';
-        } else if (formData.endDate < formData.startDate) {
-            newErrors.endDate = 'End Date cannot be before Start Date';
         }
 
         // End Time validation
         if (!formData.endTime) {
             newErrors.endTime = 'End Time is required';
-        } else if (formData.endDate === formData.startDate && formData.endTime <= formData.startTime) {
-            newErrors.endTime = 'End Time must be after Start Time on the same day';
+        }
+
+        // Validate End Date/Time is greater than Start Date/Time
+        if (formData.startDate && formData.startTime && formData.endDate && formData.endTime) {
+            const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`);
+            const endDateTime = new Date(`${formData.endDate}T${formData.endTime}`);
+            
+            if (endDateTime <= startDateTime) {
+                newErrors.endDate = 'End Date & Time must be greater than Start Date & Time';
+            }
         }
 
         // Reporting Date validation
-        // if (!formData.reportingDate) {
-        //     newErrors.reportingDate = 'Reporting Date is required';
-        // } else if (formData.reportingDate < today) {
-        //     newErrors.reportingDate = 'Reporting Date cannot be in the past';
-        // } else if (formData.reportingDate > formData.startDate) {
-        //     newErrors.reportingDate = 'Reporting Date cannot be after Start Date';
-        // }
-        // Reporting Date validation
-if (!formData.reportingDate) {
-    newErrors.reportingDate = 'Reporting Date is required';
-} else if (formData.reportingDate < today) {
-    newErrors.reportingDate = 'Reporting Date cannot be in the past';
-} else if (formData.reportingDate < formData.startDate) {  // ✅ Changed from >
-    newErrors.reportingDate = 'Reporting Date cannot be before Start Date';
-} else if (formData.reportingDate > formData.endDate) {  // ✅ Added this check
-    newErrors.reportingDate = 'Reporting Date cannot be after End Date';
-}
+        if (!formData.reportingDate) {
+            newErrors.reportingDate = 'Reporting Date is required';
+        }
 
-// Reporting Time validation
-if (!formData.reportingTime) {
-    newErrors.reportingTime = 'Reporting Time is required';
-} else if (formData.reportingDate === today && formData.reportingTime < currentTime) {
-    newErrors.reportingTime = 'Reporting Time cannot be in the past for today';
-} 
-// else if (formData.reportingDate === formData.startDate && formData.reportingTime < formData.startTime) {  // ✅ Changed from >=
-//     newErrors.reportingTime = 'Reporting Time must be at or after Start Time on the same day';
-// } 
-else if (formData.reportingDate === formData.endDate && formData.reportingTime > formData.endTime) {  // ✅ Added this check
-    newErrors.reportingTime = 'Reporting Time cannot be after End Time on the same day';
-}
+        // Reporting Time validation
+        if (!formData.reportingTime) {
+            newErrors.reportingTime = 'Reporting Time is required';
+        }
 
-        
+        // Validate Reporting Date/Time is not greater than End Date/Time
+        if (formData.reportingDate && formData.reportingTime && formData.endDate && formData.endTime) {
+            const reportingDateTime = new Date(`${formData.reportingDate}T${formData.reportingTime}`);
+            const endDateTime = new Date(`${formData.endDate}T${formData.endTime}`);
+            
+            if (reportingDateTime > endDateTime) {
+                newErrors.reportingDate = 'Reporting Date & Time cannot be greater than End Date & Time';
+            }
+        }
 
         // Venue validation
         if (!formData.venue.trim()) {
@@ -529,6 +1483,7 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                         justify-content: center;
                         z-index: 1050;
                         animation: fadeIn 0.2s ease;
+                        padding: 20px;
                     }
 
                     @keyframes fadeIn {
@@ -551,9 +1506,9 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                         background: #fff;
                         border-radius: 12px;
                         padding: 25px;
-                        width: 90%;
-                        max-width: 900px;
-                        max-height: 90vh;
+                        width: 100%;
+                        max-width: 950px;
+                        max-height: 95vh;
                         overflow-y: auto;
                         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
                         animation: slideIn 0.3s ease;
@@ -594,21 +1549,26 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                         justify-content: center;
                         padding-top: 15px;
                         border-top: 1px solid #e9ecef;
+                        flex-wrap: wrap;
                     }
 
                     .horizontal-form-group {
+                        margin-bottom: 20px;
                         display: flex;
                         align-items: flex-start;
                     }
+
                     .horizontal-form-group .form-label {
-                        min-width: 120px;
+                        min-width: 160px;
                         margin-bottom: 0;
-                        margin-right: 10px;
+                        margin-right: 15px;
                         font-weight: 500;
+                        color: #333;
+                        font-size: 14px;
                         text-align: right;
-                        white-space: nowrap;
                         padding-top: 8px;
                     }
+
                     .horizontal-form-group .form-input-wrapper {
                         flex: 1;
                     }
@@ -616,8 +1576,9 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                     .form-row-inline {
                         display: flex;
                         gap: 20px;
-                        margin-bottom: 15px;
+                        margin-bottom: 0;
                     }
+
                     .form-row-inline .horizontal-form-group {
                         flex: 1;
                     }
@@ -626,9 +1587,11 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                         display: flex;
                         gap: 10px;
                     }
+
                     .datetime-row .date-input {
                         flex: 1.5;
                     }
+
                     .datetime-row .time-input {
                         flex: 1;
                     }
@@ -658,16 +1621,18 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                     .checkbox-wrapper {
                         display: flex;
                         align-items: center;
-                        padding-top: 8px;
                     }
+
                     .checkbox-wrapper .form-check {
                         margin-bottom: 0;
                     }
+
                     .checkbox-wrapper .form-check-input {
                         width: 18px;
                         height: 18px;
                         cursor: pointer;
                     }
+
                     .checkbox-wrapper .form-check-label {
                         cursor: pointer;
                         margin-left: 5px;
@@ -678,6 +1643,7 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                         border-color: #6c757d !important;
                         color: #fff !important;
                     }
+
                     .btn-clear:hover {
                         background-color: #5c636a !important;
                         border-color: #565e64 !important;
@@ -706,6 +1672,44 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                         width: 3rem;
                         height: 3rem;
                         border-width: 0.3em;
+                    }
+
+                    /* Responsive adjustments */
+                    @media (max-width: 768px) {
+                        .modal-form-container {
+                            padding: 20px;
+                            max-width: 100%;
+                        }
+
+                        .horizontal-form-group {
+                            flex-direction: column;
+                            align-items: stretch;
+                        }
+
+                        .horizontal-form-group .form-label {
+                            text-align: left;
+                            margin-bottom: 8px;
+                            margin-right: 0;
+                            padding-top: 0;
+                            min-width: auto;
+                        }
+
+                        .form-row-inline {
+                            flex-direction: column;
+                            gap: 0;
+                        }
+
+                        .datetime-row {
+                            flex-direction: column;
+                        }
+
+                        .modal-form-container .form-buttons {
+                            flex-direction: column;
+                        }
+
+                        .modal-form-container .form-buttons .btn {
+                            width: 100%;
+                        }
                     }
                 `}
             </style>
@@ -738,24 +1742,25 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                     </div>
                 )}
 
-                {/* Row 1: Miqaat Name and Miqaat Type */}
-                <div className="form-row-inline">
-                    <div className="horizontal-form-group">
-                        <Form.Label>Miqaat Name <span className="text-danger">*</span></Form.Label>
-                        <div className="form-input-wrapper">
-                            <Form.Control
-                                type="text"
-                                name="miqaatName"
-                                value={formData.miqaatName}
-                                onChange={handleInputChange}
-                                placeholder="Enter Miqaat Name"
-                                className={errors.miqaatName ? 'is-invalid' : ''}
-                                disabled={loading}
-                            />
-                            {errors.miqaatName && <div className="error-text">{errors.miqaatName}</div>}
-                        </div>
+                {/* Miqaat Name - Full Width */}
+                <div className="horizontal-form-group" style={{ marginBottom: '20px' }}>
+                    <Form.Label>Miqaat Name <span className="text-danger">*</span></Form.Label>
+                    <div className="form-input-wrapper">
+                        <Form.Control
+                            type="text"
+                            name="miqaatName"
+                            value={formData.miqaatName}
+                            onChange={handleInputChange}
+                            placeholder="Enter Miqaat Name"
+                            className={errors.miqaatName ? 'is-invalid' : ''}
+                            disabled={loading}
+                        />
+                        {errors.miqaatName && <div className="error-text">{errors.miqaatName}</div>}
                     </div>
+                </div>
 
+                {/* Row 1: Miqaat Type and Start Date & Time */}
+                <div className="form-row-inline">
                     <div className="horizontal-form-group">
                         <Form.Label>Miqaat Type <span className="text-danger">*</span></Form.Label>
                         <div className="form-input-wrapper">
@@ -772,10 +1777,7 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                             {errors.miqaatType && <div className="error-text">{errors.miqaatType}</div>}
                         </div>
                     </div>
-                </div>
 
-                {/* Row 2: Start Date & Time and End Date & Time in one line */}
-                <div className="form-row-inline">
                     <div className="horizontal-form-group">
                         <Form.Label>Start Date & Time <span className="text-danger">*</span></Form.Label>
                         <div className="form-input-wrapper">
@@ -786,7 +1788,6 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                                         name="startDate"
                                         value={formData.startDate}
                                         onChange={handleInputChange}
-                                        min={getTodayDate()}
                                         className={errors.startDate ? 'is-invalid' : ''}
                                         disabled={loading}
                                     />
@@ -807,7 +1808,10 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                             </div>
                         </div>
                     </div>
+                </div>
 
+                {/* Row 2: End Date & Time and Reporting Date & Time */}
+                <div className="form-row-inline">
                     <div className="horizontal-form-group">
                         <Form.Label>End Date & Time <span className="text-danger">*</span></Form.Label>
                         <div className="form-input-wrapper">
@@ -818,7 +1822,6 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                                         name="endDate"
                                         value={formData.endDate}
                                         onChange={handleInputChange}
-                                        min={formData.startDate || getTodayDate()}
                                         className={errors.endDate ? 'is-invalid' : ''}
                                         disabled={loading}
                                     />
@@ -839,10 +1842,7 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Row 3: Reporting Date & Time and Venue in one line */}
-                <div className="form-row-inline">
                     <div className="horizontal-form-group">
                         <Form.Label>Reporting Date & Time <span className="text-danger">*</span></Form.Label>
                         <div className="form-input-wrapper">
@@ -853,8 +1853,6 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                                         name="reportingDate"
                                         value={formData.reportingDate}
                                         onChange={handleInputChange}
-                                        min={getTodayDate()}
-                                        max={formData.endDate || undefined}
                                         className={errors.reportingDate ? 'is-invalid' : ''}
                                         disabled={loading}
                                     />
@@ -875,7 +1873,10 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                             </div>
                         </div>
                     </div>
+                </div>
 
+                {/* Row 3: Venue and Jamiaat */}
+                <div className="form-row-inline">
                     <div className="horizontal-form-group">
                         <Form.Label>Venue <span className="text-danger">*</span></Form.Label>
                         <div className="form-input-wrapper">
@@ -891,10 +1892,7 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                             {errors.venue && <div className="error-text">{errors.venue}</div>}
                         </div>
                     </div>
-                </div>
 
-                {/* Row 4: Jamiaat and Jamaat */}
-                <div className="form-row-inline">
                     <div className="horizontal-form-group">
                         <Form.Label>Jamiaat <span className="text-danger">*</span></Form.Label>
                         <div className="form-input-wrapper">
@@ -911,7 +1909,10 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                             {errors.jamiaat && <div className="error-text">{errors.jamiaat}</div>}
                         </div>
                     </div>
+                </div>
 
+                {/* Row 4: Jamaat and Quantity */}
+                <div className="form-row-inline">
                     <div className="horizontal-form-group">
                         <Form.Label>Jamaat <span className="text-danger">*</span></Form.Label>
                         <div className="form-input-wrapper">
@@ -929,10 +1930,7 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                             {errors.jamaat && <div className="error-text">{errors.jamaat}</div>}
                         </div>
                     </div>
-                </div>
 
-                {/* Row 5: Quantity and Is Active */}
-                <div className="form-row-inline">
                     <div className="horizontal-form-group">
                         <Form.Label>Quantity <span className="text-danger">*</span></Form.Label>
                         <div className="form-input-wrapper">
@@ -949,21 +1947,22 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
                             {errors.quantity && <div className="error-text">{errors.quantity}</div>}
                         </div>
                     </div>
+                </div>
 
-                    <div className="horizontal-form-group">
-                        <Form.Label></Form.Label>
-                        <div className="form-input-wrapper">
-                            <div className="checkbox-wrapper">
-                                <Form.Check
-                                    type="checkbox"
-                                    id="isActive"
-                                    name="isActive"
-                                    checked={formData.isActive}
-                                    onChange={handleInputChange}
-                                    label="Active"
-                                    disabled={loading}
-                                />
-                            </div>
+                {/* Is Active */}
+                <div className="horizontal-form-group" style={{ marginTop: '10px' }}>
+                    <Form.Label></Form.Label>
+                    <div className="form-input-wrapper">
+                        <div className="checkbox-wrapper">
+                            <Form.Check
+                                type="checkbox"
+                                id="isActive"
+                                name="isActive"
+                                checked={formData.isActive}
+                                onChange={handleInputChange}
+                                label="Active"
+                                disabled={loading}
+                            />
                         </div>
                     </div>
                 </div>
@@ -983,6 +1982,8 @@ else if (formData.reportingDate === formData.endDate && formData.reportingTime >
         </div>
     );
 };
+
+
 
 
 

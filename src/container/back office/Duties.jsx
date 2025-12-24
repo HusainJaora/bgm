@@ -17,6 +17,7 @@
 //     // Edit mode state
 //     const [isEditMode, setIsEditMode] = useState(false);
 //     const [editingDutyId, setEditingDutyId] = useState(null);
+//     const [originalQuota, setOriginalQuota] = useState(0); // Store original quota when editing
 
 //     // Options state
 //     const [miqaatOptions, setMiqaatOptions] = useState([]);
@@ -40,6 +41,12 @@
 
 //     // Remaining quota state
 //     const [remainingQuota, setRemainingQuota] = useState(null);
+
+//     // Calculate effective remaining quota (adds back original quota when editing)
+//     const getEffectiveRemainingQuota = () => {
+//         if (remainingQuota === null) return null;
+//         return isEditMode ? remainingQuota + originalQuota : remainingQuota;
+//     };
 
 //     // Fetch Miqaat and Jamiaat on component mount - Team is dependent on Jamiaat
 //     useEffect(() => {
@@ -273,9 +280,10 @@
 //                 quota: duty.quota.toString()
 //             });
 
-//             // Set edit mode
+//             // Set edit mode and store original quota
 //             setIsEditMode(true);
 //             setEditingDutyId(duty.duty_id);
+//             setOriginalQuota(duty.quota); // Store the original quota
 
 //             // Scroll to top of form
 //             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -448,11 +456,12 @@
 //             setErrors(prev => ({ ...prev, quota: '' }));
 //         }
 
-//         // Real-time validation: check if quota exceeds remaining quota
-//         if (value && remainingQuota !== null && parseInt(value) > remainingQuota) {
+//         // Real-time validation: check if quota exceeds effective remaining quota
+//         const effectiveRemaining = getEffectiveRemainingQuota();
+//         if (value && effectiveRemaining !== null && parseInt(value) > effectiveRemaining) {
 //             setErrors(prev => ({ 
 //                 ...prev, 
-//                 quota: `Quota cannot exceed remaining quota of ${remainingQuota}` 
+//                 quota: `Quota cannot exceed available capacity of ${effectiveRemaining}` 
 //             }));
 //         }
 //     };
@@ -473,17 +482,20 @@
 //             newErrors.team = 'Please select a Team';
 //         }
 
-//         if (!formData.location || !formData.location.trim()) {
-//             newErrors.location = 'Please enter location';
-//         }
+//         // if (!formData.location || !formData.location.trim()) {
+//         //     newErrors.location = 'Please enter location';
+//         // }
 
 //         if (!formData.quota) {
 //             newErrors.quota = 'Please enter quota';
 //         } else if (formData.quota <= 0) {
 //             newErrors.quota = 'Quota must be greater than 0';
-//         } else if (remainingQuota !== null && parseInt(formData.quota) > remainingQuota) {
-//             // Check if entered quota exceeds remaining quota
-//             newErrors.quota = `Quota cannot exceed remaining quota of ${remainingQuota}`;
+//         } else {
+//             // Use effective remaining quota for validation
+//             const effectiveRemaining = getEffectiveRemainingQuota();
+//             if (effectiveRemaining !== null && parseInt(formData.quota) > effectiveRemaining) {
+//                 newErrors.quota = `Quota cannot exceed available capacity of ${effectiveRemaining}`;
+//             }
 //         }
 
 //         setErrors(newErrors);
@@ -656,6 +668,7 @@
 //         setTeamOptions([]);
 //         setIsEditMode(false);
 //         setEditingDutyId(null);
+//         setOriginalQuota(0); // Reset original quota
 //     };
 
 //     // Handle Clear
@@ -674,6 +687,7 @@
 //         setIsEditMode(false);
 //         setEditingDutyId(null);
 //         setRemainingQuota(null);
+//         setOriginalQuota(0); // Reset original quota
 //     };
 
 //     // Custom styles for react-select
@@ -706,6 +720,9 @@
 //             }
 //         })
 //     };
+
+//     // Get the effective remaining quota to display
+//     const displayRemainingQuota = getEffectiveRemainingQuota();
 
 //     return (
 //         <div className="miqaat-team-form-container">
@@ -1163,17 +1180,19 @@
 //                 </div>
                 
 //                 <div className="remaining-quota-container">
-//                     <label className="dropdown-label">Remaining Quota</label>
+//                     <label className="dropdown-label">
+//                         {isEditMode ? 'Available' : 'Remaining Quota'}
+//                     </label>
 //                     <div className="remaining-quota-display">
 //                         {loadingRemainingQuota ? (
 //                             <div className="quota-loading">
 //                                 <span className="spinner"></span>
 //                                 Loading...
 //                             </div>
-//                         ) : remainingQuota !== null ? (
-//                             <div className={`quota-value ${remainingQuota === 0 ? 'quota-zero' : remainingQuota < 50 ? 'quota-low' : ''}`}>
+//                         ) : displayRemainingQuota !== null ? (
+//                             <div className={`quota-value ${displayRemainingQuota === 0 ? 'quota-zero' : displayRemainingQuota < 50 ? 'quota-low' : ''}`}>
 //                                 <i className="ri-pie-chart-line me-2"></i>
-//                                 {remainingQuota}
+//                                 {displayRemainingQuota}
 //                             </div>
 //                         ) : (
 //                             <div className="quota-placeholder">
@@ -1228,7 +1247,8 @@
 //             <div className="two-column-row">
 //                 <div>
 //                     <label className="dropdown-label">
-//                         Location <span className="required">*</span>
+//                         Location 
+//                         {/* <span className="required">*</span> */}
 //                     </label>
 //                     <input
 //                         type="text"
@@ -1244,11 +1264,11 @@
 //                 <div>
 //                     <label className="dropdown-label">
 //                         Quota <span className="required">*</span>
-//                         {remainingQuota !== null && (
+//                         {/* {displayRemainingQuota !== null && (
 //                             <span style={{ color: '#6c757d', fontWeight: '400', marginLeft: '8px', fontSize: '13px' }}>
-//                                 (Available: {remainingQuota})
+//                                 (Available: {displayRemainingQuota})
 //                             </span>
-//                         )}
+//                         )} */}
 //                     </label>
 //                     <input
 //                         type="number"
@@ -1258,7 +1278,7 @@
 //                         onChange={handleQuotaChange}
 //                         disabled={loading}
 //                         min="1"
-//                         max={remainingQuota !== null ? remainingQuota : undefined}
+//                         max={displayRemainingQuota !== null ? displayRemainingQuota : undefined}
 //                     />
 //                     {errors.quota && <span className="error-text">{errors.quota}</span>}
 //                 </div>
@@ -1280,7 +1300,7 @@
 //                         ) : (
 //                             <>
 //                                 <i className="ri-save-line"></i>
-//                                 Update
+//                                 Save
 //                             </>
 //                         )}
 //                     </button>
@@ -1395,7 +1415,6 @@
 // export default MiqaatTeamForm;
 
 
-
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 import Swal from 'sweetalert2';
@@ -1429,6 +1448,7 @@ const MiqaatTeamForm = () => {
     const [loadingTeam, setLoadingTeam] = useState(false);
     const [loadingDuties, setLoadingDuties] = useState(false);
     const [loadingRemainingQuota, setLoadingRemainingQuota] = useState(false);
+    const [loadingTeamCount, setLoadingTeamCount] = useState(false);
 
     // Validation errors
     const [errors, setErrors] = useState({});
@@ -1439,6 +1459,13 @@ const MiqaatTeamForm = () => {
 
     // Remaining quota state
     const [remainingQuota, setRemainingQuota] = useState(null);
+    const [totalQuota, setTotalQuota] = useState(null);
+
+    // Team count state
+    const [teamCount, setTeamCount] = useState(null);
+
+    // Show form sections state
+    const [showFormSections, setShowFormSections] = useState(false);
 
     // Calculate effective remaining quota (adds back original quota when editing)
     const getEffectiveRemainingQuota = () => {
@@ -1446,10 +1473,9 @@ const MiqaatTeamForm = () => {
         return isEditMode ? remainingQuota + originalQuota : remainingQuota;
     };
 
-    // Fetch Miqaat and Jamiaat on component mount - Team is dependent on Jamiaat
+    // Fetch Miqaat on component mount only
     useEffect(() => {
         fetchMiqaatOptions();
-        fetchJamiaatOptions();
     }, []);
 
     // Fetch Miqaat Options
@@ -1477,7 +1503,8 @@ const MiqaatTeamForm = () => {
                 if (result.success && result.data) {
                     const options = result.data.map(item => ({
                         value: item.miqaat_id,
-                        label: item.miqaat_name
+                        label: item.miqaat_name,
+                        quantity: item.quantity // Store the total quota
                     }));
                     setMiqaatOptions(options);
                 }
@@ -1573,6 +1600,45 @@ const MiqaatTeamForm = () => {
         }
     };
 
+    // Fetch Team Count
+    const fetchTeamCount = async (teamId) => {
+        try {
+            setLoadingTeamCount(true);
+            const accessToken = sessionStorage.getItem('access_token');
+            
+            if (!accessToken) {
+                console.error('Access token not found');
+                return;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/Duty/GetTeamCountByTeam`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                    team_id: teamId
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data) {
+                    setTeamCount(result.data.team_count);
+                } else {
+                    setTeamCount(null);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching team count:', error);
+            setTeamCount(null);
+        } finally {
+            setLoadingTeamCount(false);
+        }
+    };
+
     // Fetch Remaining Quota by Miqaat
     const fetchRemainingQuota = async (miqaatId) => {
         try {
@@ -1657,8 +1723,21 @@ const MiqaatTeamForm = () => {
     // Handle Edit - Load duty data into form
     const handleEdit = async (duty) => {
         try {
-            // First, fetch teams for the jamiaat
+            // Show form sections if hidden
+            if (!showFormSections) {
+                setShowFormSections(true);
+            }
+
+            // Fetch jamiaat options if not already loaded
+            if (jamiaatOptions.length === 0) {
+                await fetchJamiaatOptions();
+            }
+
+            // Fetch teams for the jamiaat
             await fetchTeamOptions(duty.jamiaat_id);
+
+            // Fetch team count for the selected team
+            await fetchTeamCount(duty.team_id);
 
             // Set form data with the duty information
             setFormData({
@@ -1787,12 +1866,26 @@ const MiqaatTeamForm = () => {
 
         // Fetch duties and remaining quota for the selected miqaat
         if (selectedOption?.value) {
+            // Set total quota from the selected option
+            setTotalQuota(selectedOption.quantity || null);
+            
+            // Show form sections
+            setShowFormSections(true);
+            // Fetch jamiaat options
+            fetchJamiaatOptions();
+            // Fetch duties and quota
             fetchDutiesByMiqaat(selectedOption.value);
             fetchRemainingQuota(selectedOption.value);
         } else {
+            // Hide form sections
+            setShowFormSections(false);
             setDuties([]);
             setShowDutiesTable(false);
             setRemainingQuota(null);
+            setTotalQuota(null);
+            setJamiaatOptions([]);
+            setTeamOptions([]);
+            setTeamCount(null);
         }
     };
 
@@ -1807,6 +1900,9 @@ const MiqaatTeamForm = () => {
         if (errors.jamiaat) {
             setErrors(prev => ({ ...prev, jamiaat: '' }));
         }
+
+        // Reset team count when jamiaat changes
+        setTeamCount(null);
 
         // Fetch teams for the selected jamiaat
         if (selectedOption?.value) {
@@ -1825,6 +1921,13 @@ const MiqaatTeamForm = () => {
         
         if (errors.team) {
             setErrors(prev => ({ ...prev, team: '' }));
+        }
+
+        // Fetch team count when team is selected
+        if (selectedOption?.value) {
+            fetchTeamCount(selectedOption.value);
+        } else {
+            setTeamCount(null);
         }
     };
 
@@ -1861,6 +1964,12 @@ const MiqaatTeamForm = () => {
                 ...prev, 
                 quota: `Quota cannot exceed available capacity of ${effectiveRemaining}` 
             }));
+        } else if (value && teamCount !== null && parseInt(value) > teamCount) {
+            // Validate against team count
+            setErrors(prev => ({ 
+                ...prev, 
+                quota: `Quota cannot exceed team member count of ${teamCount}` 
+            }));
         }
     };
 
@@ -1880,9 +1989,9 @@ const MiqaatTeamForm = () => {
             newErrors.team = 'Please select a Team';
         }
 
-        if (!formData.location || !formData.location.trim()) {
-            newErrors.location = 'Please enter location';
-        }
+        // if (!formData.location || !formData.location.trim()) {
+        //     newErrors.location = 'Please enter location';
+        // }
 
         if (!formData.quota) {
             newErrors.quota = 'Please enter quota';
@@ -1893,6 +2002,9 @@ const MiqaatTeamForm = () => {
             const effectiveRemaining = getEffectiveRemainingQuota();
             if (effectiveRemaining !== null && parseInt(formData.quota) > effectiveRemaining) {
                 newErrors.quota = `Quota cannot exceed available capacity of ${effectiveRemaining}`;
+            } else if (teamCount !== null && parseInt(formData.quota) > teamCount) {
+                // Validate against team count
+                newErrors.quota = `Quota cannot exceed team member count of ${teamCount}`;
             }
         }
 
@@ -1996,6 +2108,7 @@ const MiqaatTeamForm = () => {
                         }));
                         setErrors({});
                         setTeamOptions([]);
+                        setTeamCount(null);
                     }, 2000);
                 } else if (resultCode === 2) {
                     // Update Success
@@ -2067,6 +2180,7 @@ const MiqaatTeamForm = () => {
         setIsEditMode(false);
         setEditingDutyId(null);
         setOriginalQuota(0); // Reset original quota
+        setTeamCount(null); // Reset team count
     };
 
     // Handle Clear
@@ -2085,7 +2199,11 @@ const MiqaatTeamForm = () => {
         setIsEditMode(false);
         setEditingDutyId(null);
         setRemainingQuota(null);
+        setTotalQuota(null);
         setOriginalQuota(0); // Reset original quota
+        setShowFormSections(false); // Hide form sections
+        setJamiaatOptions([]); // Clear jamiaat options
+        setTeamCount(null); // Reset team count
     };
 
     // Custom styles for react-select
@@ -2158,8 +2276,8 @@ const MiqaatTeamForm = () => {
 
                     .miqaat-quota-row {
                         display: grid;
-                        grid-template-columns: 80% 1fr;
-                        gap: 20px;
+                        grid-template-columns: 55% 22.5% 22.5%;
+                        gap: 15px;
                         margin-bottom: 20px;
                         align-items: start;
                     }
@@ -2168,11 +2286,11 @@ const MiqaatTeamForm = () => {
                         width: 100%;
                     }
 
-                    .remaining-quota-container {
+                    .quota-container {
                         width: 100%;
                     }
 
-                    .remaining-quota-display {
+                    .quota-display {
                         height: 48px;
                         padding: 0 15px;
                         border: 2px solid #dee2e6;
@@ -2194,17 +2312,9 @@ const MiqaatTeamForm = () => {
                     .quota-value {
                         font-weight: 600;
                         font-size: 18px;
-                        color: #28a745;
+                        color: #495057;
                         display: flex;
                         align-items: center;
-                    }
-
-                    .quota-value.quota-low {
-                        color: #ffc107;
-                    }
-
-                    .quota-value.quota-zero {
-                        color: #dc3545;
                     }
 
                     .quota-placeholder {
@@ -2264,10 +2374,11 @@ const MiqaatTeamForm = () => {
                     }
 
                     .button-row {
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
+                        display: flex;
                         gap: 15px;
                         margin-top: 20px;
+                        justify-content: center;
+                        align-items: center;
                     }
 
                     .save-button {
@@ -2284,7 +2395,6 @@ const MiqaatTeamForm = () => {
                         display: inline-flex;
                         align-items: center;
                         gap: 8px;
-                        width:100%;
                         white-space: nowrap;
                         justify-content: center;
                     }
@@ -2313,7 +2423,7 @@ const MiqaatTeamForm = () => {
                     }
 
                     .cancel-edit-button {
-                        height: 48px;
+                        height: 45px;
                         padding: 0 35px;
                         background: #ffc107;
                         border: none;
@@ -2347,7 +2457,6 @@ const MiqaatTeamForm = () => {
                     }
 
                     .clear-button {
-                        margin-top: 10px;
                         padding: 10px 20px;
                         background: #6c757d;
                         border: none;
@@ -2356,7 +2465,7 @@ const MiqaatTeamForm = () => {
                         font-weight: 500;
                         cursor: pointer;
                         transition: all 0.2s;
-                        width: 100%;
+                        height: 45px;
                     }
 
                     .clear-button:hover:not(:disabled) {
@@ -2366,6 +2475,20 @@ const MiqaatTeamForm = () => {
                     .clear-button:disabled {
                         opacity: 0.6;
                         cursor: not-allowed;
+                    }
+
+                    /* Team Count Info */
+                    .team-count-info {
+                        margin-top: 8px;
+                        font-size: 13px;
+                        color: #6c757d;
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+                    }
+
+                    .team-count-info.loading {
+                        color: #0d6efd;
                     }
 
                     /* Duties Table Styles */
@@ -2528,7 +2651,12 @@ const MiqaatTeamForm = () => {
                         }
 
                         .button-row {
-                            grid-template-columns: 1fr;
+                            flex-direction: column;
+                            width: 100%;
+                        }
+
+                        .save-button, .cancel-edit-button, .clear-button {
+                            width: 100%;
                         }
 
                         .duties-table-wrapper {
@@ -2557,7 +2685,7 @@ const MiqaatTeamForm = () => {
                 )}
             </div>
 
-            {/* Row 1: Miqaat Dropdown with Remaining Quota */}
+            {/* Row 1: Miqaat Dropdown with Total Quota and Remaining Quota */}
             <div className="miqaat-quota-row">
                 <div className="miqaat-dropdown-container">
                     <label className="dropdown-label">
@@ -2577,168 +2705,208 @@ const MiqaatTeamForm = () => {
                     {errors.miqaat && <span className="error-text">{errors.miqaat}</span>}
                 </div>
                 
-                <div className="remaining-quota-container">
-                    <label className="dropdown-label">
-                        {isEditMode ? 'Available' : 'Remaining Quota'}
-                    </label>
-                    <div className="remaining-quota-display">
-                        {loadingRemainingQuota ? (
-                            <div className="quota-loading">
-                                <span className="spinner"></span>
-                                Loading...
+                {showFormSections && (
+                    <>
+                        <div className="quota-container">
+                            <label className="dropdown-label">
+                                Total Quota
+                            </label>
+                            <div className="quota-display">
+                                {totalQuota !== null ? (
+                                    <div className="quota-value">
+                                        {totalQuota}
+                                    </div>
+                                ) : (
+                                    <div className="quota-placeholder">
+                                        N/A
+                                    </div>
+                                )}
                             </div>
-                        ) : displayRemainingQuota !== null ? (
-                            <div className={`quota-value ${displayRemainingQuota === 0 ? 'quota-zero' : displayRemainingQuota < 50 ? 'quota-low' : ''}`}>
-                                <i className="ri-pie-chart-line me-2"></i>
-                                {displayRemainingQuota}
+                        </div>
+
+                        <div className="quota-container">
+                            <label className="dropdown-label">
+                                {isEditMode ? 'Available' : 'Remaining'}
+                            </label>
+                            <div className="quota-display">
+                                {loadingRemainingQuota ? (
+                                    <div className="quota-loading">
+                                        <span className="spinner"></span>
+                                    </div>
+                                ) : displayRemainingQuota !== null ? (
+                                    <div className="quota-value">
+                                        {displayRemainingQuota}
+                                    </div>
+                                ) : (
+                                    <div className="quota-placeholder">
+                                        N/A
+                                    </div>
+                                )}
                             </div>
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {/* Show form sections only after miqaat is selected */}
+            {showFormSections && (
+                <>
+                    {/* Row 2: Jamiaat and Team */}
+                    <div className="two-column-row">
+                        <div>
+                            <label className="dropdown-label">
+                                Jamiaat <span className="required">*</span>
+                            </label>
+                            <Select
+                                options={jamiaatOptions}
+                                value={formData.jamiaat}
+                                onChange={handleJamiaatChange}
+                                placeholder={loadingJamiaat ? "Loading..." : "Select Jamiaat"}
+                                isClearable
+                                styles={selectStyles}
+                                error={errors.jamiaat}
+                                isDisabled={loading}
+                                isLoading={loadingJamiaat}
+                            />
+                            {errors.jamiaat && <span className="error-text">{errors.jamiaat}</span>}
+                        </div>
+
+                        <div>
+                            <label className="dropdown-label">
+                                Team <span className="required">*</span>
+                            </label>
+                            <Select
+                                options={teamOptions}
+                                value={formData.team}
+                                onChange={handleTeamChange}
+                                placeholder={loadingTeam ? "Loading..." : "Select Team"}
+                                isClearable
+                                styles={selectStyles}
+                                error={errors.team}
+                                isDisabled={loading || loadingTeam || !formData.jamiaat}
+                                isLoading={loadingTeam}
+                                noOptionsMessage={() => formData.jamiaat ? "No teams found" : "Please select Jamiaat first"}
+                            />
+                            {errors.team && <span className="error-text">{errors.team}</span>}
+                            {formData.team && (
+                                <div className={`team-count-info ${loadingTeamCount ? 'loading' : ''}`}>
+                                    {loadingTeamCount ? (
+                                        <>
+                                            <span className="spinner"></span>
+                                            Loading count...
+                                        </>
+                                    ) : teamCount !== null ? (
+                                        <>
+                                            <i className="ri-team-line"></i>
+                                            Team Members: {teamCount}
+                                        </>
+                                    ) : null}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Row 3: Location and Quota */}
+                    <div className="two-column-row">
+                        <div>
+                            <label className="dropdown-label">
+                                Location 
+                                {/* <span className="required">*</span> */}
+                            </label>
+                            <input
+                                type="text"
+                                className={`form-input ${errors.location ? 'is-invalid' : ''}`}
+                                placeholder="Enter location"
+                                value={formData.location}
+                                onChange={handleLocationChange}
+                                disabled={loading}
+                            />
+                            {errors.location && <span className="error-text">{errors.location}</span>}
+                        </div>
+
+                        <div>
+                            <label className="dropdown-label">
+                                Quota <span className="required">*</span>
+                            </label>
+                            <input
+                                type="number"
+                                className={`form-input ${errors.quota ? 'is-invalid' : ''}`}
+                                placeholder="Enter quota"
+                                value={formData.quota}
+                                onChange={handleQuotaChange}
+                                disabled={loading}
+                                min="1"
+                                max={Math.min(
+                                    displayRemainingQuota !== null ? displayRemainingQuota : Infinity,
+                                    teamCount !== null ? teamCount : Infinity
+                                )}
+                            />
+                            {errors.quota && <span className="error-text">{errors.quota}</span>}
+                        </div>
+                    </div>
+
+                    {/* Save and Cancel/Clear Button Row - Centered */}
+                    <div className="button-row">
+                        {isEditMode ? (
+                            <>
+                                <button 
+                                    className="save-button update-mode"
+                                    onClick={handleSave}
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <>
+                                            <span className="spinner"></span>
+                                            Updating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="ri-save-line"></i>
+                                            Save
+                                        </>
+                                    )}
+                                </button>
+                                <button 
+                                    className="cancel-edit-button"
+                                    onClick={handleCancelEdit}
+                                    disabled={loading}
+                                >
+                                    <i className="ri-close-line"></i>
+                                    Cancel
+                                </button>
+                            </>
                         ) : (
-                            <div className="quota-placeholder">
-                                Select Miqaat to view
-                            </div>
+                            <>
+                                <button 
+                                    className="save-button"
+                                    onClick={handleSave}
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <>
+                                            <span className="spinner"></span>
+                                            Saving...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="ri-save-line"></i>
+                                            Save
+                                        </>
+                                    )}
+                                </button>
+                                <button 
+                                    className="clear-button"
+                                    onClick={handleClear}
+                                    disabled={loading}
+                                >
+                                    <i className="ri-refresh-line me-2"></i>
+                                    Clear Form
+                                </button>
+                            </>
                         )}
                     </div>
-                </div>
-            </div>
-
-            {/* Row 2: Jamiaat and Team */}
-            <div className="two-column-row">
-                <div>
-                    <label className="dropdown-label">
-                        Jamiaat <span className="required">*</span>
-                    </label>
-                    <Select
-                        options={jamiaatOptions}
-                        value={formData.jamiaat}
-                        onChange={handleJamiaatChange}
-                        placeholder={loadingJamiaat ? "Loading..." : "Select Jamiaat"}
-                        isClearable
-                        styles={selectStyles}
-                        error={errors.jamiaat}
-                        isDisabled={loading}
-                        isLoading={loadingJamiaat}
-                    />
-                    {errors.jamiaat && <span className="error-text">{errors.jamiaat}</span>}
-                </div>
-
-                <div>
-                    <label className="dropdown-label">
-                        Team <span className="required">*</span>
-                    </label>
-                    <Select
-                        options={teamOptions}
-                        value={formData.team}
-                        onChange={handleTeamChange}
-                        placeholder={loadingTeam ? "Loading..." : "Select Team"}
-                        isClearable
-                        styles={selectStyles}
-                        error={errors.team}
-                        isDisabled={loading || loadingTeam || !formData.jamiaat}
-                        isLoading={loadingTeam}
-                        noOptionsMessage={() => formData.jamiaat ? "No teams found" : "Please select Jamiaat first"}
-                    />
-                    {errors.team && <span className="error-text">{errors.team}</span>}
-                </div>
-            </div>
-
-            {/* Row 3: Location and Quota */}
-            <div className="two-column-row">
-                <div>
-                    <label className="dropdown-label">
-                        Location <span className="required">*</span>
-                    </label>
-                    <input
-                        type="text"
-                        className={`form-input ${errors.location ? 'is-invalid' : ''}`}
-                        placeholder="Enter location"
-                        value={formData.location}
-                        onChange={handleLocationChange}
-                        disabled={loading}
-                    />
-                    {errors.location && <span className="error-text">{errors.location}</span>}
-                </div>
-
-                <div>
-                    <label className="dropdown-label">
-                        Quota <span className="required">*</span>
-                        {displayRemainingQuota !== null && (
-                            <span style={{ color: '#6c757d', fontWeight: '400', marginLeft: '8px', fontSize: '13px' }}>
-                                (Available: {displayRemainingQuota})
-                            </span>
-                        )}
-                    </label>
-                    <input
-                        type="number"
-                        className={`form-input ${errors.quota ? 'is-invalid' : ''}`}
-                        placeholder="Enter quota"
-                        value={formData.quota}
-                        onChange={handleQuotaChange}
-                        disabled={loading}
-                        min="1"
-                        max={displayRemainingQuota !== null ? displayRemainingQuota : undefined}
-                    />
-                    {errors.quota && <span className="error-text">{errors.quota}</span>}
-                </div>
-            </div>
-
-            {/* Save and Cancel Button Row */}
-            {isEditMode ? (
-                <div className="button-row">
-                    <button 
-                        className="save-button update-mode"
-                        onClick={handleSave}
-                        disabled={loading}
-                    >
-                        {loading ? (
-                            <>
-                                <span className="spinner"></span>
-                                Updating...
-                            </>
-                        ) : (
-                            <>
-                                <i className="ri-save-line"></i>
-                                Update
-                            </>
-                        )}
-                    </button>
-                    <button 
-                        className="cancel-edit-button"
-                        onClick={handleCancelEdit}
-                        disabled={loading}
-                    >
-                        <i className="ri-close-line"></i>
-                        Cancel
-                    </button>
-                </div>
-            ) : (
-                <button 
-                    className="save-button"
-                    onClick={handleSave}
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <>
-                            <span className="spinner"></span>
-                            Saving...
-                        </>
-                    ) : (
-                        <>
-                            <i className="ri-save-line"></i>
-                            Save
-                        </>
-                    )}
-                </button>
+                </>
             )}
-
-            {/* Clear Button */}
-            <button 
-                className="clear-button"
-                onClick={handleClear}
-                disabled={loading}
-            >
-                <i className="ri-refresh-line me-2"></i>
-                Clear Form
-            </button>
 
             {/* Duties Table */}
             {showDutiesTable && (

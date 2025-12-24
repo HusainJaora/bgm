@@ -12,7 +12,7 @@ export const MenuItems = [
         type: 'sub', active: false, selected: false, title: 'Master', children: [
          
           { path: `${import.meta.env.BASE_URL}master/teammaster`, type: 'link', active: false, selected: false, title: 'Team Master' },
-          { path: `${import.meta.env.BASE_URL}master/miqaatmaster`, type: 'link', active: false, selected: false, title: 'Miqaat Master' },
+          // { path: `${import.meta.env.BASE_URL}master/miqaatmaster`, type: 'link', active: false, selected: false, title: 'Miqaat Master' },
           { path: `${import.meta.env.BASE_URL}master/venuemaster`, type: 'link', active: false, selected: false, title: 'Venue Master' }
           // {
           //   title: "Back Office", type: "sub", dirchange: false, selected: false, active: false, children: [
@@ -26,6 +26,14 @@ export const MenuItems = [
           //   ]
           // },
         ]
+      },
+      {
+        path: `${import.meta.env.BASE_URL}master/miqaatmaster`,
+        icon: <i className="fe fe-airplay"></i>,
+        type: "link",
+        selected: false,
+        active: false,
+        title: "Miqaat Master",
       },
       {
         icon:<i className="fe fe-grid"></i>,

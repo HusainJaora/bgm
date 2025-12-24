@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect,useMemo } from 'react';
+import { Fragment, useState, useEffect, useMemo } from 'react';
 import { Card, Col, Row, Form, Button,Modal, Spinner } from 'react-bootstrap';
 import { Grid } from 'gridjs-react';
 import { html } from 'gridjs';
@@ -7,8 +7,6 @@ import Select from 'react-select';
 import IconButton from '../../elements/button'; 
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ConfirmDeleteModal from '../../../components/common/modalcloses/confirmdelete'
-// import SuccessToaster from '../../../components/common/modalcloses/success';
 import Swal from 'sweetalert2';
 
 
@@ -300,9 +298,6 @@ const AddJamaat = ({
             const result = await response.json();
             const raw_code = result.data.result_code
             const result_code = Number(raw_code)
-            console.log(result.data.result_code)
-
-            console.log("Save button: " + JSON.stringify(payload));
             
             if (response.status === 401) {
                 Swal.fire({
@@ -398,67 +393,136 @@ const AddJamaat = ({
     };
 
     // Custom styles for react-select
-    const selectStyles = {
-        control: (base, state) => ({
-            ...base,
-            minHeight: '38px',
-            borderColor: state.selectProps.error ? '#dc3545' : '#dee2e6',
-            '&:hover': {
-                borderColor: state.selectProps.error ? '#dc3545' : '#86b7fe'
-            }
-        }),
-        valueContainer: (base) => ({
-            ...base,
-            minHeight: '38px',
-            padding: '2px 8px',
-            maxHeight: '120px',
-            overflowY: 'auto'
-        }),
-        input: (base) => ({
-            ...base,
-            margin: '0',
-            padding: '0'
-        }),
-        indicatorsContainer: (base) => ({
-            ...base,
-            alignSelf: 'flex-start',
-            paddingTop: '8px'
-        }),
-        menu: (base) => ({
-            ...base,
-            zIndex: 9999
-        }),
-        menuList: (base) => ({
-            ...base,
-            maxHeight: '380px', // 38px per option x 10 options
-            overflowY: 'auto'
-        }),
-        placeholder: (base) => ({
-            ...base,
-            color: '#6c757d'
-        }),
-        multiValue: (base) => ({
-            ...base,
-            backgroundColor: '#e7f1ff',
-            borderRadius: '0.25rem',
-            margin: '2px'
-        }),
-        multiValueLabel: (base) => ({
-            ...base,
-            color: '#0d6efd',
-            fontSize: '0.875rem',
-            padding: '3px 6px'
-        }),
-        multiValueRemove: (base) => ({
-            ...base,
-            color: '#0d6efd',
-            borderRadius: '0 0.25rem 0.25rem 0',
-            '&:hover': {
-                backgroundColor: '#0d6efd',
-                color: '#fff',
-            }
-        })
-    };
+    // const selectStyles = {
+    //     control: (base, state) => ({
+    //         ...base,
+    //         minHeight: '38px',
+    //         borderColor: state.selectProps.error ? '#dc3545' : '#dee2e6',
+    //         '&:hover': {
+    //             borderColor: state.selectProps.error ? '#dc3545' : '#86b7fe'
+    //         }
+    //     }),
+    //     valueContainer: (base) => ({
+    //         ...base,
+    //         minHeight: '38px',
+    //         padding: '2px 8px',
+    //         maxHeight: '120px',
+    //         overflowY: 'auto'
+    //     }),
+    //     input: (base) => ({
+    //         ...base,
+    //         margin: '0',
+    //         padding: '0'
+    //     }),
+    //     indicatorsContainer: (base) => ({
+    //         ...base,
+    //         alignSelf: 'flex-start',
+    //         paddingTop: '8px'
+    //     }),
+    //     menu: (base) => ({
+    //         ...base,
+    //         zIndex: 9999
+    //     }),
+    //     menuList: (base) => ({
+    //         ...base,
+    //         maxHeight: '380px', // 38px per option x 10 options
+    //         overflowY: 'auto'
+    //     }),
+    //     placeholder: (base) => ({
+    //         ...base,
+    //         color: '#6c757d'
+    //     }),
+    //     multiValue: (base) => ({
+    //         ...base,
+    //         backgroundColor: '#e7f1ff',
+    //         borderRadius: '0.25rem',
+    //         margin: '2px'
+    //     }),
+    //     multiValueLabel: (base) => ({
+    //         ...base,
+    //         color: '#0d6efd',
+    //         fontSize: '0.875rem',
+    //         padding: '3px 6px'
+    //     }),
+    //     multiValueRemove: (base) => ({
+    //         ...base,
+    //         color: '#0d6efd',
+    //         borderRadius: '0 0.25rem 0.25rem 0',
+    //         '&:hover': {
+    //             backgroundColor: '#0d6efd',
+    //             color: '#fff',
+    //         }
+    //     })
+    // };
+
+    // Custom styles for react-select
+const selectStyles = {
+    control: (base, state) => ({
+        ...base,
+        minHeight: '38px',
+        borderColor: state.selectProps.error ? '#dc3545' : '#dee2e6',
+        '&:hover': {
+            borderColor: state.selectProps.error ? '#dc3545' : '#86b7fe'
+        }
+    }),
+    valueContainer: (base) => ({
+        ...base,
+        minHeight: '38px',
+        padding: '2px 8px',
+        maxHeight: '120px',
+        overflowY: 'auto'
+    }),
+    input: (base) => ({
+        ...base,
+        margin: '0',
+        padding: '0'
+    }),
+    indicatorsContainer: (base) => ({
+        ...base,
+        alignSelf: 'flex-start',
+        paddingTop: '8px'
+    }),
+    menu: (base) => ({
+        ...base,
+        zIndex: 9999,
+        maxHeight: '200px', // Limit menu height
+        overflowY: 'auto'
+    }),
+    menuList: (base) => ({
+        ...base,
+        maxHeight: '200px', // Match with menu maxHeight
+        overflowY: 'auto'
+    }),
+    menuPortal: (base) => ({ 
+        ...base, 
+        zIndex: 9999 
+    }),
+    placeholder: (base) => ({
+        ...base,
+        color: '#6c757d'
+    }),
+    multiValue: (base) => ({
+        ...base,
+        backgroundColor: '#e7f1ff',
+        borderRadius: '0.25rem',
+        margin: '2px'
+    }),
+    multiValueLabel: (base) => ({
+        ...base,
+        color: '#0d6efd',
+        fontSize: '0.875rem',
+        padding: '3px 6px'
+    }),
+    multiValueRemove: (base) => ({
+        ...base,
+        color: '#0d6efd',
+        borderRadius: '0 0.25rem 0.25rem 0',
+        '&:hover': {
+            backgroundColor: '#0d6efd',
+            color: '#fff',
+        }
+    })
+};
 
     if (!show) return null;
 
@@ -909,7 +973,6 @@ const EditJamaat = ({
             });
 
             const result = await response.json();
-            // console.log(result.data); 
 
             if (response.status === 401) {
                 Swal.fire({
@@ -1066,7 +1129,6 @@ const EditJamaat = ({
             });
 
             const result = await response.json();
-            console.log(result.data)
 
             if (response.ok && result.success && result.data) {
                 const selectedJamaats = result.data.map(item => ({
@@ -1333,67 +1395,135 @@ const EditJamaat = ({
     };
 
     // Custom styles for react-select
+    // const selectStyles = {
+    //     control: (base, state) => ({
+    //         ...base,
+    //         minHeight: '38px',
+    //         borderColor: state.selectProps.error ? '#dc3545' : '#dee2e6',
+    //         '&:hover': {
+    //             borderColor: state.selectProps.error ? '#dc3545' : '#86b7fe'
+    //         }
+    //     }),
+    //     valueContainer: (base) => ({
+    //         ...base,
+    //         minHeight: '38px',
+    //         padding: '2px 8px',
+    //         maxHeight: '120px',
+    //         overflowY: 'auto'
+    //     }),
+    //     input: (base) => ({
+    //         ...base,
+    //         margin: '0',
+    //         padding: '0'
+    //     }),
+    //     indicatorsContainer: (base) => ({
+    //         ...base,
+    //         alignSelf: 'flex-start',
+    //         paddingTop: '8px'
+    //     }),
+    //     menu: (base) => ({
+    //         ...base,
+    //         zIndex: 9999
+    //     }),
+    //     menuList: (base) => ({
+    //         ...base,
+    //         maxHeight: '380px', // 38px per option x 10 options
+    //         overflowY: 'auto'
+    //     }),
+    //     placeholder: (base) => ({
+    //         ...base,
+    //         color: '#6c757d'
+    //     }),
+    //     multiValue: (base) => ({
+    //         ...base,
+    //         backgroundColor: '#e7f1ff',
+    //         borderRadius: '0.25rem',
+    //         margin: '2px'
+    //     }),
+    //     multiValueLabel: (base) => ({
+    //         ...base,
+    //         color: '#0d6efd',
+    //         fontSize: '0.875rem',
+    //         padding: '3px 6px'
+    //     }),
+    //     multiValueRemove: (base) => ({
+    //         ...base,
+    //         color: '#0d6efd',
+    //         borderRadius: '0 0.25rem 0.25rem 0',
+    //         '&:hover': {
+    //             backgroundColor: '#0d6efd',
+    //             color: '#fff',
+    //         }
+    //     })
+    // };
+
     const selectStyles = {
-        control: (base, state) => ({
-            ...base,
-            minHeight: '38px',
-            borderColor: state.selectProps.error ? '#dc3545' : '#dee2e6',
-            '&:hover': {
-                borderColor: state.selectProps.error ? '#dc3545' : '#86b7fe'
-            }
-        }),
-        valueContainer: (base) => ({
-            ...base,
-            minHeight: '38px',
-            padding: '2px 8px',
-            maxHeight: '120px',
-            overflowY: 'auto'
-        }),
-        input: (base) => ({
-            ...base,
-            margin: '0',
-            padding: '0'
-        }),
-        indicatorsContainer: (base) => ({
-            ...base,
-            alignSelf: 'flex-start',
-            paddingTop: '8px'
-        }),
-        menu: (base) => ({
-            ...base,
-            zIndex: 9999
-        }),
-        menuList: (base) => ({
-            ...base,
-            maxHeight: '380px', // 38px per option x 10 options
-            overflowY: 'auto'
-        }),
-        placeholder: (base) => ({
-            ...base,
-            color: '#6c757d'
-        }),
-        multiValue: (base) => ({
-            ...base,
-            backgroundColor: '#e7f1ff',
-            borderRadius: '0.25rem',
-            margin: '2px'
-        }),
-        multiValueLabel: (base) => ({
-            ...base,
-            color: '#0d6efd',
-            fontSize: '0.875rem',
-            padding: '3px 6px'
-        }),
-        multiValueRemove: (base) => ({
-            ...base,
-            color: '#0d6efd',
-            borderRadius: '0 0.25rem 0.25rem 0',
-            '&:hover': {
-                backgroundColor: '#0d6efd',
-                color: '#fff',
-            }
-        })
-    };
+    control: (base, state) => ({
+        ...base,
+        minHeight: '38px',
+        borderColor: state.selectProps.error ? '#dc3545' : '#dee2e6',
+        '&:hover': {
+            borderColor: state.selectProps.error ? '#dc3545' : '#86b7fe'
+        }
+    }),
+    valueContainer: (base) => ({
+        ...base,
+        minHeight: '38px',
+        padding: '2px 8px',
+        maxHeight: '120px',
+        overflowY: 'auto'
+    }),
+    input: (base) => ({
+        ...base,
+        margin: '0',
+        padding: '0'
+    }),
+    indicatorsContainer: (base) => ({
+        ...base,
+        alignSelf: 'flex-start',
+        paddingTop: '8px'
+    }),
+    menu: (base) => ({
+        ...base,
+        zIndex: 9999,
+        maxHeight: '200px', // Limit menu height
+        overflowY: 'auto'
+    }),
+    menuList: (base) => ({
+        ...base,
+        maxHeight: '200px', // Match with menu maxHeight
+        overflowY: 'auto'
+    }),
+    menuPortal: (base) => ({ 
+        ...base, 
+        zIndex: 9999 
+    }),
+    placeholder: (base) => ({
+        ...base,
+        color: '#6c757d'
+    }),
+    multiValue: (base) => ({
+        ...base,
+        backgroundColor: '#e7f1ff',
+        borderRadius: '0.25rem',
+        margin: '2px'
+    }),
+    multiValueLabel: (base) => ({
+        ...base,
+        color: '#0d6efd',
+        fontSize: '0.875rem',
+        padding: '3px 6px'
+    }),
+    multiValueRemove: (base) => ({
+        ...base,
+        color: '#0d6efd',
+        borderRadius: '0 0.25rem 0.25rem 0',
+        '&:hover': {
+            backgroundColor: '#0d6efd',
+            color: '#fff',
+        }
+    })
+};
 
     if (!show) return null;
 
@@ -1860,7 +1990,6 @@ const TeamTable = () => {
 
     // Handle Save (for Add)
     const handleSave = (data) => {
-        console.log('Saved Data:', data);
         setShowAddForm(false);
         
         // Refresh the table
@@ -1872,7 +2001,6 @@ const TeamTable = () => {
 
     // Handle Update (for Edit)
     const handleUpdate = (data) => {
-        console.log('Updated Data:', data);
         setShowEditForm(false);
         setEditTeamId(null);
         
@@ -1902,7 +2030,6 @@ const TeamTable = () => {
 
     // Handle Edit
     const handleEdit = (id) => {
-        console.log('Editing team ID:', id);
         setEditTeamId(id);
         setShowEditForm(true);
     };
@@ -2364,12 +2491,10 @@ const TeamTable = () => {
 
 
     window.handleEditClick = (id) => {
-        console.log('Edit clicked for ID:', id);
         window.dispatchEvent(new CustomEvent('editRecord', { detail: { id } }));
     };
     
     window.handleDeleteClick = (id) => {
-        console.log('Delete clicked for ID:', id);
         window.dispatchEvent(new CustomEvent('deleteRecord', { detail: { id } }));
     };
 

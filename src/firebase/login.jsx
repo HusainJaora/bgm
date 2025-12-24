@@ -131,21 +131,19 @@ const Login = ({ ThemeChanger }) => {
                             <div className="p-4">
                                 <div className="d-flex justify-content-center mb-4">
                                     <Link to={`${import.meta.env.BASE_URL}dashboard`} className="d-flex align-items-center">
-                                        <img src={bgmi} alt="logo" className="img-fluid rounded" style={{ maxWidth: '100px', height: 'auto' }} />
+                                        <img src={bgmi} alt="logo" className="img-fluid rounded" style={{ maxWidth: '220px', height: 'auto' }} />
                                     </Link>
                                 </div>
-                                <p className="h5 fw-semibold mb-2 text-center">Sign In</p>
-                                <p className="mb-4 text-muted op-7 fw-normal text-center">Welcome back</p>
                                 <Form onSubmit={handleLogin}>
                                     <div className="row gy-3">
                                         {err && <Alert variant="danger">{err}</Alert>}
                                         <Col xl={12}>
-                                            <Form.Label htmlFor="signin-username" className="form-label text-default">
+                                            {/* <Form.Label htmlFor="signin-username" className="form-label text-default">
                                                 Username
-                                            </Form.Label>
+                                            </Form.Label> */}
                                             <Form.Control 
                                                 size="lg"
-                                                placeholder="Enter your username"
+                                                placeholder="ITS ID"
                                                 name="username"
                                                 type="text"
                                                 value={username}
@@ -155,14 +153,14 @@ const Login = ({ ThemeChanger }) => {
                                             />
                                         </Col>
                                         <Col xl={12} className="mb-2">
-                                            <Form.Label htmlFor="signin-password" className="form-label text-default d-block">
+                                            {/* <Form.Label htmlFor="signin-password" className="form-label text-default d-block">
                                                 Password
-                                            </Form.Label>
+                                            </Form.Label> */}
                                             <InputGroup>
                                                 <Form.Control 
                                                     size="lg" 
                                                     className="form-control" 
-                                                    placeholder="Enter your password" 
+                                                    placeholder="Password" 
                                                     name="password" 
                                                     type={passwordshow1 ? 'text' : 'password'} 
                                                     value={password} 
@@ -203,7 +201,7 @@ const Login = ({ ThemeChanger }) => {
                                                         Signing In...
                                                     </>
                                                 ) : (
-                                                    'Sign In'
+                                                    'Login'
                                                 )}
                                             </Button>
                                         </Col>
